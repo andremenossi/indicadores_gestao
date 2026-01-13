@@ -18,7 +18,7 @@ export const RecordManagement: React.FC<RecordManagementProps> = ({ onAdd, allow
           </div>
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase">Novo Lançamento</h2>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Inserção de Dados HEPP</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Preenchimento dos Dados</p>
           </div>
         </div>
         

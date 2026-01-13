@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
@@ -46,39 +45,8 @@ const DEFAULT_ROLE_CONFIGS: RoleConfig[] = [
 
 const ALLOWED_ROOMS = ['01', '02', '03'];
 
-// 30 Dados para testes
-const MOCK_RECORDS: SurgeryRecord[] = [
-  { id: 'r1', date: '2023-11-01', medicalRecord: '100001', roomNumber: '01', endAnesthesiaPrev: '07:30', startAnesthesiaNext: '07:50', intervalMinutes: 20, isDelay: false },
-  { id: 'r2', date: '2023-11-01', medicalRecord: '100002', roomNumber: '01', endAnesthesiaPrev: '09:00', startAnesthesiaNext: '09:35', intervalMinutes: 35, isDelay: false },
-  { id: 'r3', date: '2023-11-01', medicalRecord: '100003', roomNumber: '02', endAnesthesiaPrev: '08:15', startAnesthesiaNext: '08:45', intervalMinutes: 30, isDelay: false },
-  { id: 'r4', date: '2023-11-01', medicalRecord: '100004', roomNumber: '03', endAnesthesiaPrev: '10:00', startAnesthesiaNext: '11:15', intervalMinutes: 75, isDelay: true },
-  { id: 'r5', date: '2023-11-02', medicalRecord: '100005', roomNumber: '01', endAnesthesiaPrev: '07:00', startAnesthesiaNext: '07:15', intervalMinutes: 15, isDelay: false },
-  { id: 'r6', date: '2023-11-02', medicalRecord: '100006', roomNumber: '02', endAnesthesiaPrev: '11:20', startAnesthesiaNext: '12:05', intervalMinutes: 45, isDelay: false },
-  { id: 'r7', date: '2023-11-02', medicalRecord: '100007', roomNumber: '01', endAnesthesiaPrev: '13:00', startAnesthesiaNext: '13:22', intervalMinutes: 22, isDelay: false },
-  { id: 'r8', date: '2023-11-03', medicalRecord: '100008', roomNumber: '03', endAnesthesiaPrev: '08:40', startAnesthesiaNext: '09:50', intervalMinutes: 70, isDelay: true },
-  { id: 'r9', date: '2023-11-03', medicalRecord: '100009', roomNumber: '02', endAnesthesiaPrev: '14:10', startAnesthesiaNext: '14:40', intervalMinutes: 30, isDelay: false },
-  { id: 'r10', date: '2023-11-03', medicalRecord: '100010', roomNumber: '01', endAnesthesiaPrev: '15:30', startAnesthesiaNext: '15:55', intervalMinutes: 25, isDelay: false },
-  { id: 'r11', date: '2023-11-04', medicalRecord: '100011', roomNumber: '01', endAnesthesiaPrev: '07:30', startAnesthesiaNext: '07:48', intervalMinutes: 18, isDelay: false },
-  { id: 'r12', date: '2023-11-04', medicalRecord: '100012', roomNumber: '02', endAnesthesiaPrev: '09:00', startAnesthesiaNext: '10:30', intervalMinutes: 90, isDelay: true },
-  { id: 'r13', date: '2023-11-04', medicalRecord: '100013', roomNumber: '03', endAnesthesiaPrev: '11:00', startAnesthesiaNext: '11:38', intervalMinutes: 38, isDelay: false },
-  { id: 'r14', date: '2023-11-05', medicalRecord: '100014', roomNumber: '01', endAnesthesiaPrev: '08:15', startAnesthesiaNext: '08:35', intervalMinutes: 20, isDelay: false },
-  { id: 'r15', date: '2023-11-05', medicalRecord: '100015', roomNumber: '01', endAnesthesiaPrev: '10:20', startAnesthesiaNext: '11:05', intervalMinutes: 45, isDelay: false },
-  { id: 'r16', date: '2023-11-05', medicalRecord: '100016', roomNumber: '02', endAnesthesiaPrev: '13:00', startAnesthesiaNext: '13:18', intervalMinutes: 18, isDelay: false },
-  { id: 'r17', date: '2023-11-06', medicalRecord: '100017', roomNumber: '01', endAnesthesiaPrev: '07:45', startAnesthesiaNext: '08:12', intervalMinutes: 27, isDelay: false },
-  { id: 'r18', date: '2023-11-06', medicalRecord: '100018', roomNumber: '03', endAnesthesiaPrev: '09:30', startAnesthesiaNext: '10:05', intervalMinutes: 35, isDelay: false },
-  { id: 'r19', date: '2023-11-06', medicalRecord: '100019', roomNumber: '02', endAnesthesiaPrev: '14:00', startAnesthesiaNext: '15:10', intervalMinutes: 70, isDelay: true },
-  { id: 'r20', date: '2023-11-07', medicalRecord: '100020', roomNumber: '01', endAnesthesiaPrev: '08:00', startAnesthesiaNext: '08:23', intervalMinutes: 23, isDelay: false },
-  { id: 'r21', date: '2023-11-07', medicalRecord: '100021', roomNumber: '01', endAnesthesiaPrev: '10:00', startAnesthesiaNext: '10:30', intervalMinutes: 30, isDelay: false },
-  { id: 'r22', date: '2023-11-07', medicalRecord: '100022', roomNumber: '03', endAnesthesiaPrev: '13:00', startAnesthesiaNext: '13:55', intervalMinutes: 55, isDelay: false },
-  { id: 'r23', date: '2023-11-08', medicalRecord: '100023', roomNumber: '02', endAnesthesiaPrev: '07:30', startAnesthesiaNext: '07:45', intervalMinutes: 15, isDelay: false },
-  { id: 'r24', date: '2023-11-08', medicalRecord: '100024', roomNumber: '01', endAnesthesiaPrev: '09:00', startAnesthesiaNext: '09:20', intervalMinutes: 20, isDelay: false },
-  { id: 'r25', date: '2023-11-08', medicalRecord: '100025', roomNumber: '01', endAnesthesiaPrev: '11:00', startAnesthesiaNext: '12:15', intervalMinutes: 75, isDelay: true },
-  { id: 'r26', date: '2023-11-09', medicalRecord: '100026', roomNumber: '03', endAnesthesiaPrev: '08:15', startAnesthesiaNext: '08:50', intervalMinutes: 35, isDelay: false },
-  { id: 'r27', date: '2023-11-09', medicalRecord: '100027', roomNumber: '02', endAnesthesiaPrev: '10:20', startAnesthesiaNext: '10:42', intervalMinutes: 22, isDelay: false },
-  { id: 'r28', date: '2023-11-09', medicalRecord: '100028', roomNumber: '01', endAnesthesiaPrev: '13:30', startAnesthesiaNext: '14:05', intervalMinutes: 35, isDelay: false },
-  { id: 'r29', date: '2023-11-10', medicalRecord: '100029', roomNumber: '01', endAnesthesiaPrev: '07:00', startAnesthesiaNext: '07:18', intervalMinutes: 18, isDelay: false },
-  { id: 'r30', date: '2023-11-10', medicalRecord: '100030', roomNumber: '02', endAnesthesiaPrev: '09:30', startAnesthesiaNext: '10:40', intervalMinutes: 70, isDelay: true },
-];
+// Dados de exemplo removidos conforme solicitado
+const MOCK_RECORDS: SurgeryRecord[] = [];
 
 const displayDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -133,9 +101,9 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-1 h-7 bg-[#EE3234] rounded-full"></div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">HEPP GESTÃO</h1>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">HEPP</h1>
           </div>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.1em]">Acesso ao Centro Cirúrgico</p>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.1em]">Gerir Turnover</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
@@ -310,7 +278,7 @@ const App: React.FC = () => {
                 <span>Gestão</span>
                 <ChevronRight size={14} />
                 <span className="text-slate-800 uppercase tracking-tight font-black">
-                  {view === 'dashboard' ? 'Painel Geral' : view === 'records' ? 'Histórico' : view === 'add' ? 'Inserção' : 'Usuário'}
+                  {view === 'dashboard' ? 'Painel Geral' : view === 'records' ? 'Histórico' : view === 'add' ? 'Lançamento' : 'Usuário'}
                 </span>
              </div>
           </div>
