@@ -168,7 +168,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
         title={`Excluir ${deleteTarget?.type === 'user' ? 'Usuário' : 'Nível de Acesso'}`}
         message="Esta ação não pode ser desfeita. Deseja continuar?"
         onConfirm={() => {
-          if (deleteTarget?.type === 'user') setUsers(users.filter(u => u.id !== deleteTarget.id));
+          if (!deleteTarget) return;
+          if (deleteTarget.type === 'user') setUsers(users.filter(u => u.id !== deleteTarget.id));
           else setDraftRoleConfigs(draftRoleConfigs.filter(r => r.id !== deleteTarget.id));
           setDeleteTarget(null);
         }}
