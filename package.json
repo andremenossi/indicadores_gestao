@@ -2,6 +2,8 @@
   "name": "surgical-turnover-manager",
   "private": true,
   "version": "1.0.0",
+  "description": "Sistema de Gestão de Turnover Cirúrgico",
+  "author": "HEPP Gestao",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -29,8 +31,7 @@
     "appId": "com.hepp.gestao",
     "productName": "HEPP Gestao",
     "win": {
-      "target": "nsis",
-      "icon": "public/icon.ico"
+      "target": "nsis"
     },
     "nsis": {
       "oneClick": false,
