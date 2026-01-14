@@ -66,7 +66,7 @@ const PasswordInput: React.FC<{ value?: string; onChange?: (val: string) => void
         placeholder={placeholder}
         required={required}
         defaultValue={defaultValue}
-        className={`w-full pr-12 ${className || 'px-4 py-3 border border-slate-200 rounded-lg bg-[#f8fafc] font-bold text-sm outline-none focus:border-[#3583C7]'}`}
+        className={`w-full pr-12 ${className || 'px-4 py-3 border border-slate-400 rounded-lg bg-[#f8fafc] font-bold text-sm outline-none focus:border-[#3583C7]'}`}
       />
       <button 
         type="button"
@@ -97,7 +97,7 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#080c14] p-4">
-      <div className="w-full max-w-[440px] bg-white rounded-lg p-10 shadow-2xl">
+      <div className="w-full max-w-[380px] bg-white rounded-lg p-10 shadow-2xl border border-slate-400">
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-1 h-7 bg-[#EE3234] rounded-full"></div>
@@ -107,25 +107,25 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Usuário</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
             <input 
               type="text"
               value={username}
               onChange={(e) => { setUsername(e.target.value); setError(''); }}
               placeholder="Login"
               required
-              className="w-full px-4 py-3.5 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-[#3583C7] bg-[#f8fafc] font-bold text-slate-700 placeholder-slate-300 transition-colors"
+              className="w-full px-4 py-3.5 text-sm rounded-lg border border-slate-400 focus:outline-none focus:border-[#3583C7] bg-[#f8fafc] font-bold text-slate-700 placeholder-slate-300 transition-colors"
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Senha</label>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Senha</label>
             <PasswordInput 
               name="password"
               value={password}
               onChange={(val) => { setPassword(val); setError(''); }}
               placeholder="••••••••"
               required
-              className="px-4 py-3.5 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-[#3583C7] bg-[#f8fafc] font-bold text-slate-700 placeholder-slate-300 transition-colors"
+              className="px-4 py-3.5 text-sm rounded-lg border border-slate-400 focus:outline-none focus:border-[#3583C7] bg-[#f8fafc] font-bold text-slate-700 placeholder-slate-300 transition-colors"
             />
           </div>
           {error && <p className="text-[#EE3234] text-[10px] font-black text-center uppercase tracking-widest animate-pulse">{error}</p>}
