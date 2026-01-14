@@ -29,6 +29,10 @@
   "build": {
     "appId": "com.hepp.gestao",
     "productName": "HEPP Gestao",
+    "directories": {
+      "output": "dist_electron",
+      "buildResources": "non_existent_folder"
+    },
     "win": {
       "target": "nsis",
       "icon": null
@@ -41,12 +45,10 @@
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true
     },
-    "directories": {
-      "output": "dist_electron"
-    },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "!icon.ico"
     ]
   }
 }
