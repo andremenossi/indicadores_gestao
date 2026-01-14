@@ -1,15 +1,11 @@
-import { app, BrowserWindow } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1200,
+    width: 1280,
     height: 800,
     title: "HEPP Gestão - Surgical Turnover",
-    icon: path.join(__dirname, '../public/icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -17,13 +13,10 @@ function createWindow() {
     },
   });
 
-  // Remove o menu padrão para um visual mais profissional (opcional)
-  // win.setMenu(null);
-
+  // Se estiver em desenvolvimento (localhost) ou produção (arquivo local)
   if (process.env.NODE_ENV === 'development') {
     win.loadURL('http://localhost:3000');
   } else {
-    // Em produção, carrega o arquivo gerado pelo build do Vite
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
