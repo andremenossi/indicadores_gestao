@@ -30,7 +30,8 @@
     "appId": "com.hepp.gestao",
     "productName": "HEPP Gestao",
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": null
     },
     "nsis": {
       "oneClick": false,
