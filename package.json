@@ -1,16 +1,14 @@
+
 {
   "name": "surgical-turnover-manager",
   "private": true,
   "version": "1.0.0",
   "description": "Sistema de Gestão de Turnover Cirúrgico",
   "author": "HEPP Gestao",
-  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.2.3",
@@ -20,35 +18,6 @@
   },
   "devDependencies": {
     "vite": "^5.1.4",
-    "@vitejs/plugin-react": "^4.2.1",
-    "electron": "^31.0.0",
-    "electron-builder": "^24.13.3",
-    "concurrently": "^8.2.2",
-    "wait-on": "^7.2.0"
-  },
-  "build": {
-    "appId": "com.hepp.gestao",
-    "productName": "HEPP Gestao",
-    "directories": {
-      "output": "dist_electron",
-      "buildResources": "non_existent_folder"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": null
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "shortcutName": "HEPP Gestão",
-      "uninstallDisplayName": "HEPP Gestão - Desinstalar",
-      "deleteAppDataOnUninstall": true,
-      "runAfterFinish": true
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "!icon.ico"
-    ]
+    "@vitejs/plugin-react": "^4.2.1"
   }
 }

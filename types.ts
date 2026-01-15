@@ -8,7 +8,14 @@ export enum PerformanceLevel {
 // Role agora é uma string que representa o ID único do nível de acesso
 export type Role = string;
 
-export type Permission = 'VIEW_DASHBOARD' | 'VIEW_RECORDS' | 'ADD_RECORDS' | 'MANAGE_USERS';
+export type Permission = 
+  | 'VIEW_DASHBOARD' 
+  | 'VIEW_RECORDS' 
+  | 'ADD_RECORDS' 
+  | 'MANAGE_USERS'
+  | 'EDIT_RECORD'
+  | 'DELETE_RECORD'
+  | 'DELETE_PERIOD';
 
 export interface RoleConfig {
   id: string;
@@ -19,6 +26,7 @@ export interface RoleConfig {
 export interface SurgeryRecord {
   id: string;
   date: string;
+  patientName: string; // Nome do Paciente
   medicalRecord: string; // Prontuário
   roomNumber: string;
   endAnesthesiaPrev: string; // HH:mm
