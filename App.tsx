@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
@@ -33,12 +32,12 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 
 /**
  * COMPONENTE DE ÍCONE SIMPLIFICADO
- * Utiliza o arquivo GTC logo.png da pasta public (servido na raiz /).
+ * Utiliza o arquivo logo.png da pasta public (servido na raiz /).
  */
 const AppIcon = ({ className = "" }) => (
   <div className={`flex items-center justify-center overflow-hidden ${className}`}>
     <img 
-      src="GTC logo.png" 
+      src="logo.png" 
       alt="GTC" 
       className="max-w-full max-h-full object-contain block"
       onError={(e) => {
