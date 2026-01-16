@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useDeferredValue } from 'react';
+import React, { useState, useMemo, useDeferredValue, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Search, 
@@ -234,6 +234,7 @@ const EditModal: React.FC<{
 
 export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, onUpdate, onDelete, onDeletePeriod }) => {
   const { hasPermission } = useAuth();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const deferredSearchTerm = useDeferredValue(searchTerm);
   
@@ -285,6 +286,13 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
     setSearchTerm(val);
   };
 
+  const clearSearch = () => {
+    setSearchTerm('');
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
+
   const getSortIcon = (field: keyof SurgeryRecord) => {
     const size = 14;
     if (sortField !== field) return <ArrowUpDown size={size} className="opacity-30" />;
@@ -292,8 +300,7 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
   };
 
   return (
-    <div className="space-y-6 relative">
-      {/* Modais posicionados via Portal para evitar jumps no layout */}
+    <div className="space-y-6 relative animate-fade-in">
       {editingRecord && (
         <EditModal 
           record={editingRecord} 
@@ -328,12 +335,22 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
           <div className="relative flex-1 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#3583C7]" size={18} />
             <input 
+              ref={searchInputRef}
               type="text"
               placeholder="Pesquisar por paciente, prontuário ou data..."
               value={searchTerm}
               onInput={handleSearchInput}
               className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-[#3583C7] focus:ring-4 focus:ring-[#3583C7]/10 transition-all text-sm font-bold shadow-inner uppercase placeholder:normal-case"
             />
+            {searchTerm && (
+              <button 
+                onClick={clearSearch}
+                aria-label="Limpar pesquisa"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-[#EE3234] transition-colors rounded-full hover:bg-slate-200"
+              >
+                <X size={16} strokeWidth={3} />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-4">

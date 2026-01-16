@@ -30,12 +30,12 @@ export const DEFAULT_ROLE_CONFIGS: RoleConfig[] = [
   { 
     id: 'ESTATISTICA', 
     roleName: 'ESTATISTICA', 
-    permissions: ['VIEW_DASHBOARD', 'VIEW_RECORDS'] 
+    permissions: ['VIEW_DASHBOARD', 'VIEW_RECORDS', 'EDIT_RECORD', 'DELETE_RECORD'] 
   },
   { 
     id: 'CIRURGICO', 
     roleName: 'CIRURGICO', 
-    permissions: ['VIEW_RECORDS', 'ADD_RECORDS', 'EDIT_RECORD', 'DELETE_RECORD'] 
+    permissions: ['ADD_RECORDS'] 
   }
 ];
 

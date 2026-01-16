@@ -53,7 +53,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
     return records.filter(r => r.date.startsWith(selectedMonth));
   }, [records, selectedMonth]);
 
-  // Otimizado: Única iteração para calcular todas as estatísticas (O(n))
   const stats = useMemo(() => {
     return filteredRecords.reduce((acc, curr) => {
       acc.totalMinutes += curr.intervalMinutes;
@@ -99,7 +98,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
   ], [stats.highPerformanceCount, stats.mediumPerformanceCount, stats.lowPerformanceCount]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-fade-in">
       <DashboardFilters 
         selectedMonth={selectedMonth}
         onMonthChange={setSelectedMonth}
@@ -113,7 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
           value={`${stats.totalMinutes}m`} 
           subtitle="Soma de turnovers" 
           icon={<Timer />} 
-          borderColor="border-blue-500"
+          borderColor="border-l-blue-500"
           iconBg="bg-blue-50"
           iconColor="text-blue-600"
         />
@@ -122,25 +121,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
           value={stats.totalPatients} 
           subtitle="Total no período" 
           icon={<ClipboardList />} 
-          borderColor="border-blue-500" 
-          iconBg="bg-blue-50"
-          iconColor="text-blue-600"
+          borderColor="border-l-indigo-500" 
+          iconBg="bg-indigo-50"
+          iconColor="text-indigo-600"
         />
         <StatCard 
           title="Turnover Médio" 
           value={`${averageTurnover}m`} 
           subtitle="Meta Lean: 25min" 
           icon={<Clock />} 
-          borderColor="border-indigo-500" 
-          iconBg="bg-indigo-50"
-          iconColor="text-indigo-600"
+          borderColor="border-l-cyan-500" 
+          iconBg="bg-cyan-50"
+          iconColor="text-cyan-600"
         />
         <StatCard 
           title="Alta Performance" 
           value={stats.highPerformanceCount} 
           subtitle="Dentro da Meta" 
           icon={<TrendingUp />} 
-          borderColor="border-emerald-500" 
+          borderColor="border-l-emerald-500" 
           iconBg="bg-emerald-50"
           iconColor="text-emerald-600"
         />
@@ -149,7 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
           value={stats.delaysCount} 
           subtitle="Acima de 60min" 
           icon={<AlertCircle />} 
-          borderColor="border-red-600" 
+          borderColor="border-l-red-600" 
           iconBg="bg-red-50"
           iconColor="text-red-600"
         />
@@ -185,7 +184,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ records }) => {
                   strokeWidth={3} 
                   dot={{ fill: '#3583C7', r: 4 }} 
                   activeDot={{ r: 6 }} 
-                  isAnimationActive={false} // Melhora performance com muitos pontos
+                  isAnimationActive={false}
                 />
               </LineChart>
             </ResponsiveContainer>

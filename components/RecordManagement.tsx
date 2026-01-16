@@ -70,7 +70,7 @@ export const RecordManagement: React.FC<RecordManagementProps> = ({ onAdd, allow
   };
 
   return (
-    <div className="max-w-xl mx-auto animate-in slide-in-from-bottom-4 duration-300">
+    <div className="max-w-xl mx-auto animate-fade-in">
       <div className="bg-white rounded-lg shadow-2xl border border-slate-300 p-8">
         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-200">
           <div className="p-3 bg-blue-50 text-[#3583C7] rounded-md border border-blue-100">

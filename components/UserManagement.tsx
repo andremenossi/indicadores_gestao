@@ -106,7 +106,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
   const handleSaveUser = (e: React.FormEvent) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const username = fd.get('username') as string;
+    const username = (fd.get('username') as string).toUpperCase();
     const password = fd.get('password') as string;
     const role = fd.get('role') as string;
 
@@ -178,7 +178,15 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
                   <form onSubmit={handleSaveUser} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 items-end">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-500 uppercase">Login</label>
-                      <input name="username" type="text" required defaultValue={isEditingUser?.username} disabled={isEditingUser?.username === 'admin'} className="w-full px-4 py-3 border border-slate-300 rounded-md font-black text-sm outline-none focus:border-[#3583C7]" />
+                      <input 
+                        name="username" 
+                        type="text" 
+                        required 
+                        defaultValue={isEditingUser?.username} 
+                        disabled={isEditingUser?.username === 'admin'} 
+                        onInput={(e) => e.currentTarget.value = e.currentTarget.value.toUpperCase()}
+                        className="w-full px-4 py-3 border border-slate-300 rounded-md font-black text-sm outline-none focus:border-[#3583C7] uppercase" 
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-500 uppercase">Senha</label>

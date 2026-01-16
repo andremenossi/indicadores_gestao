@@ -38,8 +38,22 @@
       "electron/**/*"
     ],
     "win": {
-      "target": "portable",
+      "target": [
+        "nsis"
+      ],
       "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "HEPP Gestão",
+      "uninstallDisplayName": "HEPP Gestão",
+      "deleteAppDataOnUninstall": true,
+      "runAfterFinish": true,
+      "installerIcon": "public/icon.ico",
+      "uninstallerIcon": "public/icon.ico"
     }
   }
 }

@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   Eye, 
-  EyeOff
+  EyeOff,
+  Activity
 } from 'lucide-react';
 import { User, SurgeryRecord, Permission, RoleConfig } from './types';
 import { UserManagement } from './components/UserManagement';
@@ -29,6 +30,24 @@ import {
 import { calculateIntervalMinutes, displayDate } from './utils/time';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { useLocalStorage } from './hooks/useLocalStorage';
+
+/**
+ * COMPONENTE DE ÍCONE SIMPLIFICADO
+ * Usa caminho relativo para garantir o carregamento em builds estáticos.
+ */
+const AppIcon = ({ className = "" }) => (
+  <div className={`flex items-center justify-center overflow-hidden ${className}`}>
+    <img 
+      src="logo.svg" 
+      alt="GTC" 
+      className="max-w-full max-h-full object-contain block"
+      onError={(e) => {
+        // Fallback simples caso a imagem falhe
+        e.currentTarget.style.display = 'none';
+      }}
+    />
+  </div>
+);
 
 const PasswordInput: React.FC<{ value?: string; onChange?: (val: string) => void; name: string; placeholder?: string; required?: boolean; className?: string; defaultValue?: string }> = ({ value, onChange, name, placeholder, required, className, defaultValue }) => {
   const [show, setShow] = useState(false);
@@ -74,24 +93,22 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#080c14] p-4 animate-fade-in">
-      <div className="w-full max-w-[380px] bg-white rounded-lg p-10 shadow-2xl border border-slate-400 animate-scale-in">
-        <div className="flex flex-col items-center mb-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-1 h-7 bg-[#EE3234] rounded-full"></div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">HEPP</h1>
-          </div>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.1em]">Gerir Turnover</p>
+      <div className="w-full max-w-[380px] bg-white rounded-lg p-10 shadow-2xl border border-slate-400 animate-scale-in text-center">
+        <div className="flex flex-col items-center mb-8">
+          <AppIcon className="w-32 h-32 mb-4" />
+          <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase leading-tight">GTC</h1>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.15em] mt-1">Gestão de Turnover Cirúrgico</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 text-left">
           <div className="space-y-2">
             <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
             <input 
               type="text"
               value={username}
-              onChange={(e) => { setUsername(e.target.value); setError(''); }}
-              placeholder="Login"
+              onChange={(e) => { setUsername(e.target.value.toUpperCase()); setError(''); }}
+              placeholder="LOGIN"
               required
-              className="w-full px-4 py-3.5 text-sm rounded-lg border border-slate-400 focus:outline-none focus:border-[#3583C7] bg-[#f8fafc] font-bold text-slate-700 placeholder-slate-300 transition-all"
+              className="w-full px-4 py-3.5 text-sm rounded-lg border border-slate-400 focus:outline-none focus:border-[#3583C7] bg-[#f8fafc] font-bold text-slate-700 placeholder-slate-300 transition-all uppercase"
             />
           </div>
           <div className="space-y-2">
@@ -172,7 +189,7 @@ const AppContent: React.FC<{
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `hepp_turnover_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `gtc_turnover_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
 
@@ -185,14 +202,19 @@ const AppContent: React.FC<{
 
   const SidebarContent = () => (
     <>
-      <div className="p-8 mb-4 border-b border-slate-800/50 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-6 bg-[#EE3234] rounded-sm shrink-0"></div>
-          <span className="font-black text-white tracking-widest uppercase truncate">HEPP GESTÃO</span>
+      <div className="p-6 mb-4 border-b border-slate-800/50 flex flex-col items-center text-center">
+        <div className="flex items-center gap-3 w-full justify-between lg:justify-center">
+          <div className="flex items-center gap-3">
+            <AppIcon className="w-10 h-10" />
+            <div className="text-left">
+              <span className="font-black text-white text-lg tracking-widest uppercase truncate block leading-tight">GTC</span>
+              <span className="text-[7px] text-slate-400 font-bold uppercase tracking-widest truncate block">Gestão de Turnover Cirúrgico</span>
+            </div>
+          </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
+            <X size={20} />
+          </button>
         </div>
-        <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
-          <X size={20} />
-        </button>
       </div>
 
       <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar">
@@ -235,12 +257,10 @@ const AppContent: React.FC<{
 
   return (
     <div className="min-h-screen flex bg-[#f8fafc] w-full animate-fade-in overflow-hidden relative">
-      {/* Sidebar Desktop */}
       <aside className="hidden lg:flex w-64 bg-[#0f172a] flex-col h-screen text-slate-400 border-r border-slate-800 shrink-0 z-30">
         <SidebarContent />
       </aside>
 
-      {/* Sidebar Mobile Overlay */}
       {isSidebarOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] animate-fade-in"
@@ -248,7 +268,6 @@ const AppContent: React.FC<{
         />
       )}
 
-      {/* Sidebar Mobile Drawer */}
       <aside className={`lg:hidden fixed top-0 bottom-0 left-0 w-72 bg-[#0f172a] flex flex-col z-[101] transition-transform duration-300 ease-in-out shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <SidebarContent />
       </aside>
