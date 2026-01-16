@@ -41,7 +41,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "public/icon.ico"
+      "icon": "public/GTC logo.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -52,8 +52,8 @@
       "uninstallDisplayName": "HEPP Gestão",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true,
-      "installerIcon": "public/icon.ico",
-      "uninstallerIcon": "public/icon.ico"
+      "installerIcon": "public/GTC logo.ico",
+      "uninstallerIcon": "public/GTC logo.ico"
     }
   }
 }

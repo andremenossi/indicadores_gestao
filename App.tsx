@@ -33,12 +33,12 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 
 /**
  * COMPONENTE DE ÍCONE SIMPLIFICADO
- * Usa caminho relativo para garantir o carregamento em builds estáticos.
+ * Utiliza o arquivo GTC logo.png da pasta public (servido na raiz /).
  */
 const AppIcon = ({ className = "" }) => (
   <div className={`flex items-center justify-center overflow-hidden ${className}`}>
     <img 
-      src="logo.svg" 
+      src="GTC logo.png" 
       alt="GTC" 
       className="max-w-full max-h-full object-contain block"
       onError={(e) => {

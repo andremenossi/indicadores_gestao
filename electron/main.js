@@ -26,7 +26,7 @@ if (!gotTheLock) {
       minWidth: 1000,
       minHeight: 700,
       title: "GTC - Gestão de Turnover Cirúrgico",
-      icon: path.join(__dirname, '../public/icon.ico'),
+      icon: path.join(__dirname, '../public/GTC logo.ico'),
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         nodeIntegration: false,
