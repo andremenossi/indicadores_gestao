@@ -43,6 +43,7 @@ const PasswordInput: React.FC<{ value?: string; onChange?: (val: string) => void
         <button 
           type="button"
           onClick={() => setShow(!show)}
+          aria-label={show ? "Ocultar senha" : "Mostrar senha"}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#3583C7] transition-colors p-1"
         >
           {show ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -55,7 +56,7 @@ const PasswordInput: React.FC<{ value?: string; onChange?: (val: string) => void
 const ConfirmationModal: React.FC<{ isOpen: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void }> = ({ isOpen, title, message, onConfirm, onCancel }) => {
   if (!isOpen) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-[2px] animate-fade-in">
+    <div className="fixed inset-0 z-[200000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-[2px] animate-fade-in">
       <div className="bg-white rounded-lg shadow-[0_30px_100px_-20px_rgba(0,0,0,0.4)] border border-slate-300 w-full max-w-sm overflow-hidden animate-scale-in">
         <div className="p-10 text-center">
           <div className="mx-auto w-16 h-16 flex items-center justify-center mb-6 text-[#EE3234] bg-red-50 rounded-full border border-red-100">
@@ -152,7 +153,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
   return (
     <>
       <div className="space-y-6 animate-fade-in relative z-[50]">
-        <div className="flex border-b border-slate-300 gap-8">
+        <div className="flex border-b border-slate-300 gap-8 overflow-x-auto no-scrollbar whitespace-nowrap">
           <button onClick={() => setTab('users')} className={`pb-4 px-2 text-xs font-black uppercase tracking-widest relative transition-colors ${tab === 'users' ? 'text-[#3583C7]' : 'text-slate-400 hover:text-slate-600'}`}>
             Usuários {tab === 'users' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#3583C7] rounded-t-full" />}
           </button>
@@ -163,9 +164,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
 
         {tab === 'users' ? (
           <div className="bg-white rounded-lg border border-slate-300 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div className="p-4 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50">
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Gerenciar Usuários</h3>
-              <button onClick={() => showUserForm ? closeUserForm() : setIsAddingUser(true)} className={`flex items-center gap-2 px-4 py-2 text-white rounded-md text-[10px] font-black uppercase transition-all ${showUserForm ? 'bg-slate-500' : 'bg-[#3583C7] hover:bg-[#2d70ab]'}`}>
+              <button onClick={() => showUserForm ? closeUserForm() : setIsAddingUser(true)} className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-white rounded-md text-[10px] font-black uppercase transition-all ${showUserForm ? 'bg-slate-500' : 'bg-[#3583C7] hover:bg-[#2d70ab]'}`}>
                 {showUserForm ? <X size={14} /> : <PlusCircle size={14} />} 
                 {showUserForm ? 'Cancelar' : 'Novo Usuário'}
               </button>
@@ -173,8 +174,8 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
 
             <div className={`drawer-container ${showUserForm ? 'open' : ''}`}>
               <div className="drawer-content">
-                <div className="p-8 bg-slate-50 border-b border-slate-200">
-                  <form onSubmit={handleSaveUser} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                <div className="p-6 sm:p-8 bg-slate-50 border-b border-slate-200">
+                  <form onSubmit={handleSaveUser} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 items-end">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-500 uppercase">Login</label>
                       <input name="username" type="text" required defaultValue={isEditingUser?.username} disabled={isEditingUser?.username === 'admin'} className="w-full px-4 py-3 border border-slate-300 rounded-md font-black text-sm outline-none focus:border-[#3583C7]" />
@@ -205,9 +206,9 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
           </div>
         ) : (
           <div className="bg-white rounded-lg border border-slate-300 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div className="p-4 sm:p-6 border-b border-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50">
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-800">Configurar Níveis</h3>
-              <button onClick={() => showRoleForm ? closeRoleForm() : setIsAddingRole(true)} className={`flex items-center gap-2 px-4 py-2 text-white rounded-md text-[10px] font-black uppercase transition-all ${showRoleForm ? 'bg-slate-500' : 'bg-[#3583C7] hover:bg-[#2d70ab]'}`}>
+              <button onClick={() => showRoleForm ? closeRoleForm() : setIsAddingRole(true)} className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-white rounded-md text-[10px] font-black uppercase transition-all ${showRoleForm ? 'bg-slate-500' : 'bg-[#3583C7] hover:bg-[#2d70ab]'}`}>
                 {showRoleForm ? <X size={14} /> : <PlusCircle size={14} />} 
                 {showRoleForm ? 'Cancelar' : 'Novo Nível'}
               </button>
@@ -215,13 +216,13 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
 
             <div className={`drawer-container ${showRoleForm ? 'open' : ''}`}>
               <div className="drawer-content">
-                <div className="p-8 bg-slate-50 border-b border-slate-200">
-                  <form onSubmit={handleSaveRole} className="flex gap-4 items-end max-w-2xl">
-                    <div className="flex-1 space-y-1.5">
+                <div className="p-6 sm:p-8 bg-slate-50 border-b border-slate-200">
+                  <form onSubmit={handleSaveRole} className="flex flex-col sm:flex-row gap-4 items-end max-w-2xl">
+                    <div className="flex-1 w-full space-y-1.5">
                       <label className="text-[10px] font-black text-slate-500 uppercase">Nome do Nível</label>
                       <input name="roleName" type="text" required defaultValue={isEditingRole?.roleName} disabled={isEditingRole?.id === 'ADMIN'} className="w-full px-4 py-3 border border-slate-300 rounded-md font-black text-sm outline-none focus:border-[#3583C7]" />
                     </div>
-                    <button type="submit" className="font-black py-3 px-8 rounded-lg text-[10px] uppercase transition-all shadow-md bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95">Salvar Nível</button>
+                    <button type="submit" className="w-full sm:w-auto font-black py-3 px-8 rounded-lg text-[10px] uppercase transition-all shadow-md bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95">Salvar Nível</button>
                   </form>
                 </div>
               </div>
@@ -235,14 +236,14 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
               onTogglePermission={togglePermission} 
             />
 
-            <div className="p-6 bg-slate-50 border-t border-slate-300 flex items-center justify-between">
+            <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-300 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase">
                 {isChanged ? <AlertCircle className="text-amber-500" size={16} /> : <CheckCircle2 className="text-emerald-500" size={16} />}
                 {isChanged ? 'Alterações pendentes' : 'Configurações atualizadas'}
               </div>
-              <div className="flex gap-4">
-                <button onClick={() => setDraftRoleConfigs(JSON.parse(JSON.stringify(roleConfigs)))} disabled={!isChanged} className="flex items-center gap-2 px-6 py-2 rounded-lg text-[10px] font-black uppercase bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors active:scale-95"><RotateCcw size={14} /> Descartar</button>
-                <button onClick={() => { setRoleConfigs(draftRoleConfigs); alert('Configurações salvas!'); }} disabled={!isChanged} className="flex items-center gap-2 px-8 py-2 rounded-lg text-[10px] font-black uppercase bg-[#3583C7] text-white hover:bg-[#2d70ab] disabled:opacity-30 transition-all shadow-md active:scale-95"><Save size={14} /> Aplicar</button>
+              <div className="flex gap-4 w-full sm:w-auto">
+                <button onClick={() => setDraftRoleConfigs(JSON.parse(JSON.stringify(roleConfigs)))} disabled={!isChanged} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-[10px] font-black uppercase bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 disabled:opacity-30 transition-colors active:scale-95"><RotateCcw size={14} /> Descartar</button>
+                <button onClick={() => { setRoleConfigs(draftRoleConfigs); alert('Configurações salvas!'); }} disabled={!isChanged} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-2 rounded-lg text-[10px] font-black uppercase bg-[#3583C7] text-white hover:bg-[#2d70ab] disabled:opacity-30 transition-all shadow-md active:scale-95"><Save size={14} /> Aplicar</button>
               </div>
             </div>
           </div>

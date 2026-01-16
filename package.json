@@ -5,10 +5,13 @@
   "version": "1.0.0",
   "description": "Sistema de Gestão de Turnover Cirúrgico",
   "author": "HEPP Gestao",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "vite build && electron-builder"
   },
   "dependencies": {
     "react": "^19.2.3",
@@ -18,6 +21,25 @@
   },
   "devDependencies": {
     "vite": "^5.1.4",
-    "@vitejs/plugin-react": "^4.2.1"
+    "@vitejs/plugin-react": "^4.2.1",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.hepp.turnover",
+    "productName": "HEPP Gestão",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "public/icon.ico"
+    }
   }
 }
