@@ -1,3 +1,4 @@
+
 const { app, BrowserWindow, session } = require('electron');
 const path = require('path');
 
@@ -25,7 +26,8 @@ if (!gotTheLock) {
       minWidth: 1000,
       minHeight: 700,
       title: "GTC - Gestão de Turnover Cirúrgico",
-      icon: path.join(__dirname, '../public/logo.ico'),
+      // Usar PNG aqui é mais seguro e cross-platform
+      icon: path.join(__dirname, '../public/logo.png'),
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
         nodeIntegration: false,

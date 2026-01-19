@@ -1,3 +1,4 @@
+
 {
   "name": "surgical-turnover-manager",
   "private": true,
@@ -40,7 +41,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "public/logo.ico"
+      "icon": "public/logo.png"
     },
     "nsis": {
       "oneClick": false,
@@ -51,8 +52,8 @@
       "uninstallDisplayName": "HEPP Gestão",
       "deleteAppDataOnUninstall": true,
       "runAfterFinish": true,
-      "installerIcon": "public/logo.ico",
-      "uninstallerIcon": "public/logo.ico"
+      "installerIcon": "public/logo.png",
+      "uninstallerIcon": "public/logo.png"
     }
   }
 }
