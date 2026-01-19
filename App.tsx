@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   ClipboardList, 
@@ -12,7 +12,8 @@ import {
   X,
   Eye, 
   EyeOff,
-  Activity
+  Share2,
+  Wifi
 } from 'lucide-react';
 import { User, SurgeryRecord, Permission, RoleConfig } from './types';
 import { UserManagement } from './components/UserManagement';
@@ -20,7 +21,6 @@ import { RecordManagement } from './components/RecordManagement';
 import { HistoryManagement } from './components/HistoryManagement';
 import { Dashboard } from './components/Dashboard';
 import { 
-  STORAGE_KEYS, 
   INITIAL_USERS, 
   DEFAULT_ROLE_CONFIGS, 
   ALLOWED_ROOMS,
@@ -28,22 +28,14 @@ import {
 } from './constants/config';
 import { calculateIntervalMinutes, displayDate } from './utils/time';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { useLocalStorage } from './hooks/useLocalStorage';
 
-/**
- * COMPONENTE DE ÍCONE SIMPLIFICADO
- * Utiliza o arquivo logo.png da pasta public (servido na raiz /).
- */
 const AppIcon = ({ className = "" }) => (
   <div className={`flex items-center justify-center overflow-hidden ${className}`}>
     <img 
       src="logo.png" 
       alt="GTC" 
       className="max-w-full max-h-full object-contain block"
-      onError={(e) => {
-        // Fallback simples caso a imagem falhe
-        e.currentTarget.style.display = 'none';
-      }}
+      onError={(e) => { e.currentTarget.style.display = 'none'; }}
     />
   </div>
 );
@@ -65,8 +57,7 @@ const PasswordInput: React.FC<{ value?: string; onChange?: (val: string) => void
       <button 
         type="button"
         onClick={() => setShow(!show)}
-        aria-label={show ? "Ocultar senha" : "Mostrar senha"}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#3583C7] transition-colors p-1"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#3583C7] p-1"
       >
         {show ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>
@@ -85,7 +76,6 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
       u.username.toLowerCase() === username.toLowerCase() && 
       u.password === password
     );
-
     if (matched) onLogin(matched);
     else setError('Usuário ou senha incorretos.');
   };
@@ -118,13 +108,12 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
               onChange={(val) => { setPassword(val); setError(''); }}
               placeholder="••••••••"
               required
-              className="px-4 py-3.5 text-sm rounded-lg border border-slate-400 focus:outline-none focus:border-[#3583C7] bg-[#f8fafc] font-bold text-slate-700 placeholder-slate-300 transition-all"
             />
           </div>
           {error && <p className="text-[#EE3234] text-[10px] font-black text-center uppercase tracking-widest animate-pulse">{error}</p>}
           <button 
             type="submit"
-            className="w-full bg-[#3583C7] hover:bg-[#2d70ab] text-white font-black py-4 rounded-lg transition-all shadow-lg shadow-blue-500/10 text-[11px] uppercase tracking-[0.15em] mt-2 active:scale-95"
+            className="w-full bg-[#3583C7] hover:bg-[#2d70ab] text-white font-black py-4 rounded-lg transition-all shadow-lg text-[11px] uppercase tracking-[0.15em] mt-2 active:scale-95"
           >
             Acessar Sistema
           </button>
@@ -138,13 +127,14 @@ const AppContent: React.FC<{
   view: string;
   setView: (v: any) => void;
   records: SurgeryRecord[];
-  setRecords: (val: SurgeryRecord[] | ((prev: SurgeryRecord[]) => SurgeryRecord[])) => void;
+  setRecords: any;
   users: User[];
-  setUsers: (val: User[] | ((prev: User[]) => User[])) => void;
+  setUsers: any;
   roleConfigs: RoleConfig[];
-  setRoleConfigs: (val: RoleConfig[] | ((prev: RoleConfig[]) => RoleConfig[])) => void;
+  setRoleConfigs: any;
   onLogout: () => void;
-}> = ({ view, setView, records, setRecords, users, setUsers, roleConfigs, setRoleConfigs, onLogout }) => {
+  networkInfo: { ip: string; port: number } | null;
+}> = ({ view, setView, records, setRecords, users, setUsers, roleConfigs, setRoleConfigs, onLogout, networkInfo }) => {
   const { user, hasPermission } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -156,25 +146,21 @@ const AppContent: React.FC<{
       intervalMinutes: diff,
       isDelay: diff > 60
     };
-    setRecords(prev => [record, ...prev]);
+    setRecords([record, ...records]);
   };
 
   const handleUpdateRecord = (updated: SurgeryRecord) => {
     const diff = calculateIntervalMinutes(updated.endAnesthesiaPrev, updated.startAnesthesiaNext);
-    const record: SurgeryRecord = {
-      ...updated,
-      intervalMinutes: diff,
-      isDelay: diff > 60
-    };
-    setRecords(prev => prev.map(r => r.id === record.id ? record : r));
+    const record: SurgeryRecord = { ...updated, intervalMinutes: diff, isDelay: diff > 60 };
+    setRecords(records.map(r => r.id === record.id ? record : r));
   };
 
   const handleDeleteRecord = (id: string) => {
-    setRecords(prev => prev.filter(r => r.id !== id));
+    setRecords(records.filter(r => r.id !== id));
   };
 
   const handleDeleteByPeriod = (startDate: string, endDate: string) => {
-    setRecords(prev => prev.filter(r => r.date < startDate || r.date > endDate));
+    setRecords(records.filter(r => r.date < startDate || r.date > endDate));
   };
 
   const exportToExcel = () => {
@@ -206,8 +192,8 @@ const AppContent: React.FC<{
           <div className="flex items-center gap-3">
             <AppIcon className="w-10 h-10" />
             <div className="text-left">
-              <span className="font-black text-white text-lg tracking-widest uppercase truncate block leading-tight">GTC</span>
-              <span className="text-[7px] text-slate-400 font-bold uppercase tracking-widest truncate block">Gestão de Turnover Cirúrgico</span>
+              <span className="font-black text-white text-lg tracking-widest uppercase block leading-tight">GTC</span>
+              <span className="text-[7px] text-slate-400 font-bold uppercase tracking-widest block">Gestão de Turnover Cirúrgico</span>
             </div>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
@@ -221,10 +207,10 @@ const AppContent: React.FC<{
           <button 
             key={item.id}
             onClick={() => { setView(item.id as any); setIsSidebarOpen(false); }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-300 text-sm font-semibold group ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all text-sm font-semibold ${
               view === item.id 
               ? 'bg-[#3583C7] text-white shadow-lg translate-x-2' 
-              : 'hover:bg-slate-800 hover:text-slate-200 hover:translate-x-1'
+              : 'hover:bg-slate-800 hover:text-slate-200'
             }`}
           >
             <item.icon size={18} className="shrink-0" />
@@ -233,19 +219,36 @@ const AppContent: React.FC<{
         ))}
       </nav>
 
+      {/* Network Info Panel */}
+      {networkInfo && (
+        <div className="m-4 p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+           <div className="flex items-center gap-2 mb-2">
+             <Share2 size={12} className="text-[#3583C7]" />
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Acesso em Rede</span>
+           </div>
+           <div className="bg-black/40 p-2 rounded text-[10px] font-mono text-emerald-400 flex items-center gap-2 select-all">
+             <Wifi size={10} />
+             http://{networkInfo.ip}:{networkInfo.port}
+           </div>
+           <p className="text-[8px] text-slate-500 mt-2 font-bold uppercase text-center">Acesse este endereço em outros dispositivos</p>
+        </div>
+      )}
+
       <div className="p-4 mt-auto border-t border-slate-800">
-        <div className="flex items-center gap-3 px-2 mb-4 cursor-default">
+        <div className="flex items-center gap-3 px-2 mb-4">
           <div className="w-8 h-8 bg-slate-800 rounded-md flex items-center justify-center border border-slate-700 shrink-0">
             <UserIcon size={14} className="text-slate-400" />
           </div>
-          <div className="overflow-hidden min-w-0">
+          <div className="overflow-hidden">
             <p className="text-xs font-bold text-white truncate uppercase">{user?.username}</p>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">{user?.role}</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">
+               {roleConfigs.find(r => r.id === user?.role)?.roleName}
+            </p>
           </div>
         </div>
         <button 
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-[#EE3234] hover:bg-[#EE3234]/10 transition-all font-bold text-xs uppercase tracking-widest active:scale-95"
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-[#EE3234] hover:bg-[#EE3234]/10 transition-all font-bold text-xs uppercase tracking-widest"
         >
           <LogOut size={16} className="shrink-0" />
           <span>Sair</span>
@@ -259,28 +262,14 @@ const AppContent: React.FC<{
       <aside className="hidden lg:flex w-64 bg-[#0f172a] flex-col h-screen text-slate-400 border-r border-slate-800 shrink-0 z-30">
         <SidebarContent />
       </aside>
-
-      {isSidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] animate-fade-in"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      <aside className={`lg:hidden fixed top-0 bottom-0 left-0 w-72 bg-[#0f172a] flex flex-col z-[101] transition-transform duration-300 ease-in-out shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {isSidebarOpen && <div className="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100]" onClick={() => setIsSidebarOpen(false)} />}
+      <aside className={`lg:hidden fixed top-0 bottom-0 left-0 w-72 bg-[#0f172a] flex flex-col z-[101] transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <SidebarContent />
       </aside>
-
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header className="h-16 bg-white border-b border-slate-300 flex items-center justify-between px-6 shrink-0 z-20">
           <div className="flex items-center gap-3">
-             <button 
-               onClick={() => setIsSidebarOpen(true)}
-               aria-label="Abrir menu"
-               className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-md transition-colors"
-             >
-               <Menu size={20} />
-             </button>
+             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-md"><Menu size={20} /></button>
              <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest truncate">
                 <span>Gestão</span>
                 <ChevronRight size={14} className="opacity-50" />
@@ -289,20 +278,15 @@ const AppContent: React.FC<{
                 </span>
              </div>
           </div>
-          
           <div className="flex items-center gap-4">
             {view === 'records' && (
-              <button 
-                onClick={exportToExcel}
-                className="flex items-center gap-2 px-4 py-2 bg-[#3583C7] text-white rounded-md font-bold shadow-md hover:bg-[#2d70ab] transition-all text-[10px] uppercase tracking-widest active:scale-95"
-              >
+              <button onClick={exportToExcel} className="flex items-center gap-2 px-4 py-2 bg-[#3583C7] text-white rounded-md font-bold shadow-md hover:bg-[#2d70ab] transition-all text-[10px] uppercase tracking-widest">
                 <Download size={14} />
                 <span className="hidden sm:inline">Exportar CSV</span>
               </button>
             )}
           </div>
         </header>
-
         <main className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
           <div className="max-w-7xl mx-auto space-y-8">
             {view === 'dashboard' && <Dashboard records={records} />}
@@ -318,9 +302,9 @@ const AppContent: React.FC<{
             {view === 'users' && hasPermission('MANAGE_USERS') && (
               <UserManagement 
                 users={users} 
-                setUsers={setUsers as any} 
+                setUsers={setUsers} 
                 roleConfigs={roleConfigs} 
-                setRoleConfigs={setRoleConfigs as any} 
+                setRoleConfigs={setRoleConfigs} 
               />
             )}
           </div>
@@ -333,10 +317,80 @@ const AppContent: React.FC<{
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [view, setView] = useState<'dashboard' | 'records' | 'add' | 'users'>('dashboard');
-  
-  const [records, setRecords] = useLocalStorage<SurgeryRecord[]>(STORAGE_KEYS.RECORDS, MOCK_RECORDS);
-  const [users, setUsers] = useLocalStorage<User[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
-  const [roleConfigs, setRoleConfigs] = useLocalStorage<RoleConfig[]>(STORAGE_KEYS.PERMISSIONS, DEFAULT_ROLE_CONFIGS);
+  const [records, setRecords] = useState<SurgeryRecord[]>([]);
+  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+  const [roleConfigs, setRoleConfigs] = useState<RoleConfig[]>(DEFAULT_ROLE_CONFIGS);
+  const [networkInfo, setNetworkInfo] = useState<{ip: string; port: number} | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Busca dados iniciais da API local
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [dataRes, netRes] = await Promise.all([
+          fetch('/api/data'),
+          fetch('/api/network-info')
+        ]);
+        const data = await dataRes.json();
+        const net = await netRes.json();
+
+        // Se o banco estiver vazio (primeira vez), usa os mocks/iniciais
+        if (data.records.length > 0 || data.users.length > 0) {
+          setRecords(data.records);
+          setUsers(data.users);
+          setRoleConfigs(data.roleConfigs);
+        } else {
+          // Salva os iniciais no servidor pela primeira vez
+          await fetch('/api/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ records: MOCK_RECORDS, users: INITIAL_USERS, roleConfigs: DEFAULT_ROLE_CONFIGS })
+          });
+          setRecords(MOCK_RECORDS);
+        }
+        setNetworkInfo(net);
+      } catch (e) {
+        console.error("Erro ao conectar com API local:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Sincroniza dados com o servidor sempre que houver mudanças
+  const updateDataOnServer = async (newRecords: SurgeryRecord[], newUsers: User[], newRoles: RoleConfig[]) => {
+    try {
+      await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ records: newRecords, users: newUsers, roleConfigs: newRoles })
+      });
+    } catch (e) {
+      console.error("Erro ao sincronizar com servidor:", e);
+    }
+  };
+
+  const wrapSetRecords = (newRecords: SurgeryRecord[]) => {
+    setRecords(newRecords);
+    updateDataOnServer(newRecords, users, roleConfigs);
+  };
+
+  const wrapSetUsers = (newUsers: User[]) => {
+    setUsers(newUsers);
+    updateDataOnServer(records, newUsers, roleConfigs);
+  };
+
+  const wrapSetRoleConfigs = (newRoles: RoleConfig[]) => {
+    setRoleConfigs(newRoles);
+    updateDataOnServer(records, users, newRoles);
+  };
+
+  if (isLoading) return (
+    <div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white font-black uppercase tracking-[0.3em]">
+       Iniciando Servidor...
+    </div>
+  );
 
   if (!user) return <LoginForm users={users} onLogin={setUser} />;
 
@@ -346,12 +400,13 @@ const App: React.FC = () => {
         view={view}
         setView={setView}
         records={records}
-        setRecords={setRecords}
+        setRecords={wrapSetRecords}
         users={users}
-        setUsers={setUsers}
+        setUsers={wrapSetUsers}
         roleConfigs={roleConfigs}
-        setRoleConfigs={setRoleConfigs}
+        setRoleConfigs={wrapSetRoleConfigs}
         onLogout={() => setUser(null)}
+        networkInfo={networkInfo}
       />
     </AuthProvider>
   );
