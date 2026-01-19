@@ -219,20 +219,19 @@ const AppContent: React.FC<{
         ))}
       </nav>
 
-      {/* Network Info Panel */}
-      {networkInfo && (
-        <div className="m-4 p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-           <div className="flex items-center gap-2 mb-2">
-             <Share2 size={12} className="text-[#3583C7]" />
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Acesso em Rede</span>
-           </div>
-           <div className="bg-black/40 p-2 rounded text-[10px] font-mono text-emerald-400 flex items-center gap-2 select-all">
-             <Wifi size={10} />
-             http://{networkInfo.ip}:{networkInfo.port}
-           </div>
-           <p className="text-[8px] text-slate-500 mt-2 font-bold uppercase text-center">Acesse este endereço em outros dispositivos</p>
-        </div>
-      )}
+      {/* Identificador de Host */}
+      <div className="m-4 p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+          <div className="flex items-center gap-2 mb-2">
+            <Share2 size={12} className="text-[#3583C7]" />
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sincronização</span>
+          </div>
+          <div className="bg-black/40 p-2 rounded text-[10px] font-mono text-emerald-400 flex items-center gap-2">
+            <Wifi size={10} />
+            {window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+              ? 'Este PC é o Mestre' 
+              : `Conectado a: ${window.location.hostname}`}
+          </div>
+      </div>
 
       <div className="p-4 mt-auto border-t border-slate-800">
         <div className="flex items-center gap-3 px-2 mb-4">
@@ -320,37 +319,35 @@ const App: React.FC = () => {
   const [records, setRecords] = useState<SurgeryRecord[]>([]);
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [roleConfigs, setRoleConfigs] = useState<RoleConfig[]>(DEFAULT_ROLE_CONFIGS);
-  const [networkInfo, setNetworkInfo] = useState<{ip: string; port: number} | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Busca dados iniciais da API local
+  // Usa URLs relativas para que o fetch vá sempre para o servidor que serviu a página (Master ou Local)
+  const API_BASE = ""; 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [dataRes, netRes] = await Promise.all([
-          fetch('/api/data'),
-          fetch('/api/network-info')
-        ]);
+        const dataRes = await fetch(`${API_BASE}/api/data`);
         const data = await dataRes.json();
-        const net = await netRes.json();
 
-        // Se o banco estiver vazio (primeira vez), usa os mocks/iniciais
-        if (data.records.length > 0 || data.users.length > 0) {
+        if (data.records && (data.records.length > 0 || data.users.length > 0)) {
           setRecords(data.records);
           setUsers(data.users);
           setRoleConfigs(data.roleConfigs);
         } else {
-          // Salva os iniciais no servidor pela primeira vez
-          await fetch('/api/save', {
+          // Inicializa dados se estiver vazio
+          const initialData = { records: MOCK_RECORDS, users: INITIAL_USERS, roleConfigs: DEFAULT_ROLE_CONFIGS };
+          await fetch(`${API_BASE}/api/save`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ records: MOCK_RECORDS, users: INITIAL_USERS, roleConfigs: DEFAULT_ROLE_CONFIGS })
+            body: JSON.stringify(initialData)
           });
           setRecords(MOCK_RECORDS);
+          setUsers(INITIAL_USERS);
+          setRoleConfigs(DEFAULT_ROLE_CONFIGS);
         }
-        setNetworkInfo(net);
       } catch (e) {
-        console.error("Erro ao conectar com API local:", e);
+        console.error("Erro ao conectar com API:", e);
       } finally {
         setIsLoading(false);
       }
@@ -358,16 +355,15 @@ const App: React.FC = () => {
     fetchData();
   }, []);
 
-  // Sincroniza dados com o servidor sempre que houver mudanças
   const updateDataOnServer = async (newRecords: SurgeryRecord[], newUsers: User[], newRoles: RoleConfig[]) => {
     try {
-      await fetch('/api/save', {
+      await fetch(`${API_BASE}/api/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ records: newRecords, users: newUsers, roleConfigs: newRoles })
       });
     } catch (e) {
-      console.error("Erro ao sincronizar com servidor:", e);
+      console.error("Erro ao sincronizar:", e);
     }
   };
 
@@ -388,7 +384,7 @@ const App: React.FC = () => {
 
   if (isLoading) return (
     <div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white font-black uppercase tracking-[0.3em]">
-       Iniciando Servidor...
+       Carregando GTC...
     </div>
   );
 
@@ -406,7 +402,7 @@ const App: React.FC = () => {
         roleConfigs={roleConfigs}
         setRoleConfigs={wrapSetRoleConfigs}
         onLogout={() => setUser(null)}
-        networkInfo={networkInfo}
+        networkInfo={null}
       />
     </AuthProvider>
   );
