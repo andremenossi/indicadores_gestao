@@ -1,4 +1,3 @@
-
 const { app, BrowserWindow, session } = require('electron');
 const path = require('path');
 
@@ -26,7 +25,7 @@ if (!gotTheLock) {
       minWidth: 1000,
       minHeight: 700,
       title: "GTC - Gestão de Turnover Cirúrgico",
-      // Usar PNG aqui é mais seguro e cross-platform
+      // Para a janela em si, o Electron aceita PNG e é mais seguro
       icon: path.join(__dirname, '../public/logo.png'),
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
@@ -36,7 +35,6 @@ if (!gotTheLock) {
     });
 
     // Se fechar o app sem clicar em "Sair", o estado do React (User) é perdido
-    // Adicionalmente, limpamos o storage de sessão para garantir o deslogue completo
     mainWindow.on('close', () => {
       session.defaultSession.clearStorageData({
         storages: ['serviceworkers', 'cachestorage']
