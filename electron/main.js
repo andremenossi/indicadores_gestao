@@ -1,20 +1,17 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const os = require('os');
-const http = require('http');
 
-let mainWindow;
+let controlWindow;
 const PORT = 3000;
 
-// Definimos o caminho dos dados para a pasta onde o executável está (tornando-o portátil/compartilhável)
+// Pasta de dados persistente na pasta do executável
 const APP_DIR = path.dirname(app.getPath('exe'));
 const DATA_PATH = path.join(APP_DIR, 'gtc_database.json');
-const CONFIG_PATH = path.join(APP_DIR, 'server_address.json');
 
-// --- FUNÇÕES DE APOIO ---
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
     for (const k in interfaces) {
@@ -28,33 +25,13 @@ function getLocalIP() {
     return '127.0.0.1';
 }
 
-// Verifica se uma URL está ativa
-function checkServerActive(url) {
-    return new Promise((resolve) => {
-        const request = http.get(url + '/api/data', (res) => {
-            resolve(res.statusCode === 200);
-        });
-        request.on('error', () => resolve(false));
-        request.setTimeout(2000, () => {
-            request.destroy();
-            resolve(false);
-        });
-    });
-}
-
-// --- SERVIDOR WEB INTERNO ---
 function startInternalServer() {
     const server = express();
     server.use(cors());
     server.use(express.json());
 
-    // Inicializa banco de dados na pasta do APP se não existir
     if (!fs.existsSync(DATA_PATH)) {
-        fs.writeFileSync(DATA_PATH, JSON.stringify({ 
-            records: [], 
-            users: [], 
-            roleConfigs: [] 
-        }, null, 2));
+        fs.writeFileSync(DATA_PATH, JSON.stringify({ records: [], users: [], roleConfigs: [] }, null, 2));
     }
 
     server.get('/api/data', (req, res) => {
@@ -75,85 +52,78 @@ function startInternalServer() {
         }
     });
 
-    server.get('/api/network-info', (req, res) => {
-        res.json({ ip: getLocalIP(), port: PORT });
-    });
-
     server.use(express.static(path.join(__dirname, '../dist')));
     server.get('*', (req, res) => {
         res.sendFile(path.join(__dirname, '../dist/index.html'));
     });
 
     server.listen(PORT, '0.0.0.0', () => {
-        const myIP = getLocalIP();
-        // Salva o endereço atual para que outros PCs saibam onde conectar
-        fs.writeFileSync(CONFIG_PATH, JSON.stringify({ url: `http://${myIP}:${PORT}` }));
-        console.log(`Servidor Mestre rodando em http://${myIP}:${PORT}`);
+        console.log(`Servidor GTC rodando em http://0.0.0.0:${PORT}`);
     });
 }
 
-// --- INICIALIZAÇÃO APP ---
-async function createWindow() {
-    mainWindow = new BrowserWindow({
-        width: 1280,
-        height: 850,
-        minWidth: 1024,
-        minHeight: 720,
-        title: "GTC - Gestão de Turnover Cirúrgico",
+async function createControlPanel() {
+    // Janela pequena apenas para controle e visualização do IP
+    controlWindow = new BrowserWindow({
+        width: 450,
+        height: 350,
+        resizable: false,
+        title: "GTC - Painel do Servidor",
         autoHideMenuBar: true,
         icon: path.join(__dirname, '../public/logo.png'),
         webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true,
-        },
-    });
-
-    Menu.setApplicationMenu(null);
-
-    let targetUrl = `http://localhost:${PORT}`;
-    
-    // Lógica de Conexão em Rede
-    if (fs.existsSync(CONFIG_PATH)) {
-        try {
-            const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-            const isMasterActive = await checkServerActive(config.url);
-            
-            if (isMasterActive) {
-                // Se o mestre já estiver rodando, este app vira apenas um "visualizador" do mestre
-                targetUrl = config.url;
-                console.log("Conectando ao Servidor Mestre existente em: " + targetUrl);
-            } else {
-                // Se o mestre não estiver ativo, este PC assume a liderança
-                startInternalServer();
-            }
-        } catch (e) {
-            startInternalServer();
+            nodeIntegration: true,
+            contextIsolation: false
         }
-    } else {
-        startInternalServer();
-    }
-
-    mainWindow.loadURL(targetUrl);
-
-    mainWindow.on('closed', () => {
-        mainWindow = null;
     });
+
+    const localIP = getLocalIP();
+    const accessURL = `http://${localIP}:${PORT}`;
+
+    // HTML simples incorporado para o Painel de Controle
+    const controlHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; }
+                .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin-top: 20px; }
+                .ip { color: #3583C7; font-size: 24px; font-weight: bold; margin: 15px 0; }
+                .btn { background: #3583C7; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+                .btn:hover { background: #2d70ab; }
+                .status { color: #10b981; font-size: 11px; text-transform: uppercase; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <img src="logo.png" style="width: 60px; margin-bottom: 10px;">
+            <h3>Servidor GTC Ativo</h3>
+            <p style="font-size: 13px; color: #94a3b8;">O sistema está rodando em sua rede local.</p>
+            <div class="card">
+                <div class="status">● Endereço de Acesso</div>
+                <div class="ip">${accessURL}</div>
+                <button class="btn" onclick="openBrowser()">Abrir no Navegador</button>
+            </div>
+            <p style="font-size: 10px; color: #64748b; margin-top: 20px;">Mantenha esta janela aberta para que outros possam acessar.</p>
+            <script>
+                const { shell } = require('electron');
+                function openBrowser() { shell.openExternal('${accessURL}'); }
+            </script>
+        </body>
+        </html>
+    `;
+
+    fs.writeFileSync(path.join(__dirname, 'control.html'), controlHTML);
+    controlWindow.loadFile(path.join(__dirname, 'control.html'));
+
+    // Abre o navegador automaticamente na primeira execução
+    shell.openExternal(`http://localhost:${PORT}`);
 }
 
-const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) {
+app.whenReady().then(() => {
+    startInternalServer();
+    createControlPanel();
+});
+
+app.on('window-all-closed', () => {
     app.quit();
-} else {
-    app.on('second-instance', () => {
-        if (mainWindow) {
-            if (mainWindow.isMinimized()) mainWindow.restore();
-            mainWindow.focus();
-        }
-    });
-
-    app.whenReady().then(createWindow);
-
-    app.on('window-all-closed', () => {
-        if (process.platform !== 'darwin') app.quit();
-    });
-}
+});

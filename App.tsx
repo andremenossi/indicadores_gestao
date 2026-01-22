@@ -13,7 +13,7 @@ import {
   Eye, 
   EyeOff,
   Share2,
-  Wifi
+  Globe
 } from 'lucide-react';
 import { User, SurgeryRecord, Permission, RoleConfig } from './types';
 import { UserManagement } from './components/UserManagement';
@@ -133,8 +133,7 @@ const AppContent: React.FC<{
   roleConfigs: RoleConfig[];
   setRoleConfigs: any;
   onLogout: () => void;
-  networkInfo: { ip: string; port: number } | null;
-}> = ({ view, setView, records, setRecords, users, setUsers, roleConfigs, setRoleConfigs, onLogout, networkInfo }) => {
+}> = ({ view, setView, records, setRecords, users, setUsers, roleConfigs, setRoleConfigs, onLogout }) => {
   const { user, hasPermission } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -219,18 +218,18 @@ const AppContent: React.FC<{
         ))}
       </nav>
 
-      {/* Identificador de Host */}
-      <div className="m-4 p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+      {/* Identificador de Rede */}
+      <div className="m-4 p-4 bg-blue-900/20 rounded-lg border border-blue-800/50">
           <div className="flex items-center gap-2 mb-2">
-            <Share2 size={12} className="text-[#3583C7]" />
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sincronização</span>
+            <Globe size={14} className="text-[#3583C7]" />
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Endereço de Rede</span>
           </div>
-          <div className="bg-black/40 p-2 rounded text-[10px] font-mono text-emerald-400 flex items-center gap-2">
-            <Wifi size={10} />
-            {window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-              ? 'Este PC é o Mestre' 
-              : `Conectado a: ${window.location.hostname}`}
+          <div className="text-[11px] font-mono text-emerald-400 break-all bg-black/40 p-2 rounded">
+            http://{window.location.hostname}:3000
           </div>
+          <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mt-2 leading-tight">
+            Compartilhe este endereço com colegas na mesma rede Wi-Fi.
+          </p>
       </div>
 
       <div className="p-4 mt-auto border-t border-slate-800">
@@ -321,7 +320,7 @@ const App: React.FC = () => {
   const [roleConfigs, setRoleConfigs] = useState<RoleConfig[]>(DEFAULT_ROLE_CONFIGS);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Usa URLs relativas para que o fetch vá sempre para o servidor que serviu a página (Master ou Local)
+  // No modo navegador, a API_BASE é relativa
   const API_BASE = ""; 
 
   useEffect(() => {
@@ -335,7 +334,6 @@ const App: React.FC = () => {
           setUsers(data.users);
           setRoleConfigs(data.roleConfigs);
         } else {
-          // Inicializa dados se estiver vazio
           const initialData = { records: MOCK_RECORDS, users: INITIAL_USERS, roleConfigs: DEFAULT_ROLE_CONFIGS };
           await fetch(`${API_BASE}/api/save`, {
             method: 'POST',
@@ -402,7 +400,6 @@ const App: React.FC = () => {
         roleConfigs={roleConfigs}
         setRoleConfigs={wrapSetRoleConfigs}
         onLogout={() => setUser(null)}
-        networkInfo={null}
       />
     </AuthProvider>
   );
