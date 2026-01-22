@@ -8,16 +8,21 @@ const os = require('os');
 let controlWindow;
 const PORT = 3000;
 
-// Pasta de dados persistente: tenta usar a pasta do EXE, mas se não tiver permissão, usa a pasta de dados do usuário
+// Pasta de dados persistente
 const EXE_DIR = path.dirname(app.getPath('exe'));
 const DATA_PATH = path.join(EXE_DIR, 'gtc_database.json');
 
+/**
+ * Detecta o IP real da máquina na rede local.
+ * Ajustado para compatibilidade com Node.js moderno onde family pode ser 4 ou 'IPv4'.
+ */
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
     for (const k in interfaces) {
         for (const k2 in interfaces[k]) {
             const address = interfaces[k][k2];
-            if (address.family === 'IPv4' && !address.internal) {
+            // Verifica IPv4 e ignora endereços internos (loopback)
+            if ((address.family === 'IPv4' || address.family === 4) && !address.internal) {
                 return address.address;
             }
         }
@@ -30,7 +35,6 @@ function startInternalServer() {
     server.use(cors());
     server.use(express.json());
 
-    // Inicializa o banco de dados se não existir
     if (!fs.existsSync(DATA_PATH)) {
         fs.writeFileSync(DATA_PATH, JSON.stringify({ records: [], users: [], roleConfigs: [] }, null, 2));
     }
@@ -53,19 +57,18 @@ function startInternalServer() {
         }
     });
 
-    // Serve os arquivos estáticos do React (da pasta dist)
     server.use(express.static(path.join(__dirname, '../dist')));
     
-    // Rota coringa para o React Router (SPA)
     server.get('*', (req, res) => {
         const indexPath = path.join(__dirname, '../dist/index.html');
         if (fs.existsSync(indexPath)) {
             res.sendFile(indexPath);
         } else {
-            res.status(404).send("Front-end não encontrado. Execute o build primeiro.");
+            res.status(404).send("Front-end não encontrado.");
         }
     });
 
+    // O binding em '0.0.0.0' permite que qualquer dispositivo na rede acesse o servidor
     server.listen(PORT, '0.0.0.0', () => {
         console.log(`Servidor GTC rodando em http://0.0.0.0:${PORT}`);
     });
@@ -76,7 +79,7 @@ async function createControlPanel() {
         width: 480,
         height: 420,
         resizable: false,
-        title: "GTC - Servidor Ativo",
+        title: "GTC - Servidor de Rede Ativo",
         autoHideMenuBar: true,
         icon: path.join(__dirname, '../public/logo.png'),
         webPreferences: {
@@ -88,7 +91,6 @@ async function createControlPanel() {
     const localIP = getLocalIP();
     const accessURL = `http://${localIP}:${PORT}`;
 
-    // Em vez de salvar um arquivo, carregamos o HTML via Data URL para ser mais seguro
     const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -104,24 +106,25 @@ async function createControlPanel() {
                 .ip { color: #3583C7; font-size: 28px; font-weight: 900; margin: 10px 0; font-family: monospace; }
                 .btn { background: #3583C7; color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; font-weight: 800; text-transform: uppercase; font-size: 12px; transition: all 0.2s; margin-top: 15px; width: 100%; box-shadow: 0 4px 6px -1px rgba(53, 131, 199, 0.3); }
                 .btn:hover { background: #2d70ab; transform: translateY(-1px); }
-                .btn:active { transform: translateY(0); }
                 .footer { font-size: 10px; color: #475569; margin-top: 30px; line-height: 1.5; }
+                .warning { color: #f59e0b; font-size: 9px; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
             </style>
         </head>
         <body>
             <img src="logo.png" class="logo" onerror="this.style.display='none'">
-            <h2>GTC - Servidor Ativo</h2>
-            <div class="status-tag">ON-LINE</div>
+            <h2>GTC - Servidor de Rede</h2>
+            <div class="status-tag">ATIVO EM TODA A REDE</div>
             
             <div class="card">
-                <div class="label">Endereço de Acesso Local</div>
+                <div class="label">Copie este endereço para outros PCs:</div>
                 <div class="ip">${accessURL}</div>
-                <button class="btn" onclick="openBrowser()">Abrir no Navegador</button>
+                <button class="btn" onclick="openBrowser()">Abrir neste computador</button>
+                <div class="warning">Certifique-se de que o Firewall do Windows permite o acesso</div>
             </div>
             
             <div class="footer">
                 Mantenha esta janela aberta para garantir o acesso.<br>
-                Dados salvos em: ${DATA_PATH}
+                Dados em: ${DATA_PATH}
             </div>
 
             <script>
@@ -134,7 +137,7 @@ async function createControlPanel() {
 
     controlWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
 
-    // Abre o navegador padrão automaticamente na inicialização
+    // Abre o navegador padrão localmente
     shell.openExternal(`http://localhost:${PORT}`);
 
     controlWindow.on('closed', () => {
@@ -142,7 +145,6 @@ async function createControlPanel() {
     });
 }
 
-// Impede múltiplas instâncias do servidor
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
