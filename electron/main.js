@@ -13,21 +13,28 @@ const EXE_DIR = path.dirname(app.getPath('exe'));
 const DATA_PATH = path.join(EXE_DIR, 'gtc_database.json');
 
 /**
- * Detecta o IP real da máquina na rede local.
- * Ajustado para compatibilidade com Node.js moderno onde family pode ser 4 ou 'IPv4'.
+ * Detecta o IP real da máquina, priorizando interfaces físicas.
  */
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
-    for (const k in interfaces) {
-        for (const k2 in interfaces[k]) {
-            const address = interfaces[k][k2];
-            // Verifica IPv4 e ignora endereços internos (loopback)
-            if ((address.family === 'IPv4' || address.family === 4) && !address.internal) {
-                return address.address;
+    const candidates = [];
+
+    for (const name in interfaces) {
+        // Ignora interfaces virtuais comuns que podem confundir a rota de rede
+        if (name.toLowerCase().includes('virtual') || 
+            name.toLowerCase().includes('vbox') || 
+            name.toLowerCase().includes('vswitch') ||
+            name.toLowerCase().includes('docker')) continue;
+
+        for (const iface of interfaces[name]) {
+            if ((iface.family === 'IPv4' || iface.family === 4) && !iface.internal) {
+                candidates.push(iface.address);
             }
         }
     }
-    return '127.0.0.1';
+    
+    // Retorna o primeiro candidato válido ou localhost como fallback
+    return candidates.length > 0 ? candidates[0] : '127.0.0.1';
 }
 
 function startInternalServer() {
@@ -68,18 +75,28 @@ function startInternalServer() {
         }
     });
 
-    // O binding em '0.0.0.0' permite que qualquer dispositivo na rede acesse o servidor
-    server.listen(PORT, '0.0.0.0', () => {
-        console.log(`Servidor GTC rodando em http://0.0.0.0:${PORT}`);
+    // Binding explícito em 0.0.0.0 para aceitar conexões externas
+    const httpInstance = server.listen(PORT, '0.0.0.0', () => {
+        console.log(`[SERVER] Rodando em http://0.0.0.0:${PORT}`);
+    });
+
+    httpInstance.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`[SERVER] Erro: A porta ${PORT} já está em uso.`);
+            // Notifica o usuário se a janela estiver aberta
+            if (controlWindow) {
+                controlWindow.webContents.executeJavaScript(`document.getElementById('status').innerHTML = 'ERRO: Porta ${PORT} ocupada'; document.getElementById('status').className = 'status-tag error';`);
+            }
+        }
     });
 }
 
 async function createControlPanel() {
     controlWindow = new BrowserWindow({
         width: 480,
-        height: 420,
+        height: 440,
         resizable: false,
-        title: "GTC - Servidor de Rede Ativo",
+        title: "HEPP Gestão - Servidor de Rede",
         autoHideMenuBar: true,
         icon: path.join(__dirname, '../public/logo.png'),
         webPreferences: {
@@ -100,31 +117,34 @@ async function createControlPanel() {
                 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: white; text-align: center; padding: 40px 20px; margin: 0; }
                 .logo { width: 80px; margin-bottom: 20px; }
                 h2 { margin: 0; font-size: 20px; letter-spacing: 1px; color: #f8fafc; }
-                .status-tag { display: inline-block; background: #064e3b; color: #10b981; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; margin-top: 10px; border: 1px solid #065f46; }
+                .status-tag { display: inline-block; background: #064e3b; color: #10b981; padding: 4px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; margin-top: 10px; border: 1px solid #065f46; text-transform: uppercase; }
+                .status-tag.error { background: #450a0a; color: #ef4444; border-color: #7f1d1d; }
                 .card { background: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; margin-top: 30px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
                 .label { color: #94a3b8; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px; }
-                .ip { color: #3583C7; font-size: 28px; font-weight: 900; margin: 10px 0; font-family: monospace; }
+                .ip { color: #3583C7; font-size: 32px; font-weight: 900; margin: 10px 0; font-family: 'Courier New', monospace; letter-spacing: -1px; }
                 .btn { background: #3583C7; color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; font-weight: 800; text-transform: uppercase; font-size: 12px; transition: all 0.2s; margin-top: 15px; width: 100%; box-shadow: 0 4px 6px -1px rgba(53, 131, 199, 0.3); }
                 .btn:hover { background: #2d70ab; transform: translateY(-1px); }
                 .footer { font-size: 10px; color: #475569; margin-top: 30px; line-height: 1.5; }
-                .warning { color: #f59e0b; font-size: 9px; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
+                .warning-box { margin-top: 15px; padding: 10px; border-radius: 6px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); color: #f59e0b; font-size: 9px; font-weight: bold; text-transform: uppercase; line-height: 1.3; }
             </style>
         </head>
         <body>
             <img src="logo.png" class="logo" onerror="this.style.display='none'">
-            <h2>GTC - Servidor de Rede</h2>
-            <div class="status-tag">ATIVO EM TODA A REDE</div>
+            <h2>HEPP Gestão</h2>
+            <div id="status" class="status-tag">Servidor Online (0.0.0.0)</div>
             
             <div class="card">
-                <div class="label">Copie este endereço para outros PCs:</div>
+                <div class="label">Endereço de Acesso Externo:</div>
                 <div class="ip">${accessURL}</div>
                 <button class="btn" onclick="openBrowser()">Abrir neste computador</button>
-                <div class="warning">Certifique-se de que o Firewall do Windows permite o acesso</div>
+                <div class="warning-box">
+                    Atenção: Se outros PCs não acessarem, altere o perfil da rede do Windows de "Pública" para "Privada".
+                </div>
             </div>
             
             <div class="footer">
-                Mantenha esta janela aberta para garantir o acesso.<br>
-                Dados em: ${DATA_PATH}
+                Não feche esta janela enquanto estiver trabalhando.<br>
+                Banco de dados: ${DATA_PATH}
             </div>
 
             <script>
