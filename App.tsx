@@ -112,8 +112,9 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Busca insensível a maiúsculas/minúsculas para o login
     const matched = users.find(u => 
-      u.username.toLowerCase() === username.toLowerCase() && 
+      u.username.toUpperCase() === username.toUpperCase() && 
       u.password === password
     );
     if (matched) onLogin(matched);
@@ -443,28 +444,39 @@ const App: React.FC = () => {
   const [roleConfigs, setRoleConfigs] = useState<RoleConfig[]>(DEFAULT_ROLE_CONFIGS);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE = ""; 
+  // Define a base da API dinamicamente para facilitar o uso em rede
+  const API_BASE = window.location.origin.includes('localhost') ? "" : window.location.origin;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const dataRes = await fetch(`${API_BASE}/api/data`);
         const data = await dataRes.json();
-        if (data.records) {
-          setRecords(data.records);
+        
+        // Só atualizamos o estado se o servidor retornar usuários válidos
+        // Isso previne que um erro no servidor limpe a lista de acesso Admin do front
+        if (data && data.users && data.users.length > 0) {
+          setRecords(data.records || []);
           setCleaningRecords(data.cleaningRecords || []);
           setUsers(data.users);
           setRoleConfigs(data.roleConfigs);
         } else {
+          // Fallback seguro se o banco de dados do servidor estiver ilegível
           setRecords(MOCK_RECORDS);
           setCleaningRecords([]);
           setUsers(INITIAL_USERS);
           setRoleConfigs(DEFAULT_ROLE_CONFIGS);
         }
-      } catch (e) { console.error(e); } finally { setIsLoading(false); }
+      } catch (e) { 
+        console.error('Falha ao conectar com o servidor de dados:', e); 
+        // Em caso de erro de rede, mantém os usuários padrão para permitir login local se possível
+        setUsers(INITIAL_USERS);
+      } finally { 
+        setIsLoading(false); 
+      }
     };
     fetchData();
-  }, []);
+  }, [API_BASE]);
 
   const updateServer = async (recs: SurgeryRecord[], cleaningRecs: CleaningRecord[], usrs: User[], roles: RoleConfig[]) => {
     try {
@@ -473,7 +485,7 @@ const App: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ records: recs, cleaningRecords: cleaningRecs, users: usrs, roleConfigs: roles })
       });
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error('Erro ao salvar no servidor:', e); }
   };
 
   if (isLoading) return <div className="h-screen w-full flex items-center justify-center bg-[#0f172a] text-white font-black uppercase tracking-widest">Iniciando GSC...</div>;
