@@ -1,5 +1,6 @@
+
 {
-  "name": "Surgical Turnover Manager",
-  "description": "A comprehensive system for monitoring and optimizing surgical room turnover times based on Lean methodology indicators.",
+  "name": "GSC - Gestão de Sala Cirúrgica",
+  "description": "Sistema abrangente para monitoramento e otimização de salas cirúrgicas baseado em indicadores Lean.",
   "requestFramePermissions": []
 }

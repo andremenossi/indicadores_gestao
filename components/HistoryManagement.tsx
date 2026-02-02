@@ -12,7 +12,8 @@ import {
   Edit2, 
   Trash2,
   Trash,
-  AlertTriangle
+  AlertTriangle,
+  Download
 } from 'lucide-react';
 import { SurgeryRecord } from '../types';
 import { displayDate } from '../utils/time';
@@ -24,6 +25,7 @@ interface HistoryManagementProps {
   onUpdate: (record: SurgeryRecord) => void;
   onDelete: (id: string) => void;
   onDeletePeriod: (startDate: string, endDate: string) => void;
+  onExport: () => void;
 }
 
 const LIMIT_OPTIONS = [10, 20, 30, 40, 50, 'Sem Limite'];
@@ -232,7 +234,7 @@ const EditModal: React.FC<{
   );
 };
 
-export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, onUpdate, onDelete, onDeletePeriod }) => {
+export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, onUpdate, onDelete, onDeletePeriod, onExport }) => {
   const { hasPermission } = useAuth();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -365,7 +367,15 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
               </select>
             </div>
             
-            {hasPermission('DELETE_PERIOD') && (
+            <button 
+                onClick={onExport}
+                className="flex items-center gap-2 px-4 py-2 bg-[#3583C7] text-white rounded-md font-black shadow-md hover:bg-[#2d70ab] transition-all text-[10px] uppercase tracking-widest"
+              >
+                <Download size={14} /> Exportar CSV
+            </button>
+
+            {/* Fixed permission check for DELETE_PERIOD_TURNOVER */}
+            {hasPermission('DELETE_PERIOD_TURNOVER') && (
               <button 
                 onClick={() => setShowMaintenance(!showMaintenance)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-[10px] font-black uppercase transition-all active:scale-95 ${showMaintenance ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
@@ -471,9 +481,10 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
                       )}
                     </td>
                     <td className="px-4 py-6 text-right align-middle">
-                      {(hasPermission('EDIT_RECORD') || hasPermission('DELETE_RECORD')) && (
+                      {/* Fixed permission checks for EDIT_TURNOVER and DELETE_TURNOVER */}
+                      {(hasPermission('EDIT_TURNOVER') || hasPermission('DELETE_TURNOVER')) && (
                         <div className="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                          {hasPermission('EDIT_RECORD') && (
+                          {hasPermission('EDIT_TURNOVER') && (
                             <button 
                               onClick={() => setEditingRecord(r)}
                               className="p-1 text-slate-600 hover:text-[#3583C7] transition-colors"
@@ -482,7 +493,7 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
                               <Edit2 size={16} />
                             </button>
                           )}
-                          {hasPermission('DELETE_RECORD') && (
+                          {hasPermission('DELETE_TURNOVER') && (
                             <button 
                               onClick={() => setIdToDelete(r.id)}
                               className="p-1 text-slate-600 hover:text-[#EE3234] transition-colors"

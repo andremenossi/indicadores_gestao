@@ -57,7 +57,7 @@ const ConfirmationModal: React.FC<{ isOpen: boolean; title: string; message: str
   if (!isOpen) return null;
   return createPortal(
     <div className="fixed inset-0 z-[200000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-[2px] animate-fade-in">
-      <div className="bg-white rounded-lg shadow-[0_30px_100px_-20px_rgba(0,0,0,0.4)] border border-slate-300 w-full max-w-sm overflow-hidden animate-scale-in">
+      <div className="bg-white rounded-lg shadow-[0_30px_100px_-20px_rgba(0,0,0,0.4)] border border-slate-300 w-full max-sm overflow-hidden animate-scale-in">
         <div className="p-10 text-center">
           <div className="mx-auto w-16 h-16 flex items-center justify-center mb-6 text-[#EE3234] bg-red-50 rounded-full border border-red-100">
             <AlertTriangle size={32} strokeWidth={2.5} />
@@ -144,7 +144,21 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers,
     }));
   };
 
-  const allPermissions: Permission[] = ['VIEW_DASHBOARD', 'VIEW_RECORDS', 'ADD_RECORDS', 'EDIT_RECORD', 'DELETE_RECORD', 'DELETE_PERIOD', 'MANAGE_USERS'];
+  // Fixed permission list to match types.ts
+  const allPermissions: Permission[] = [
+    'VIEW_DASHBOARD', 
+    'MANAGE_USERS',
+    'VIEW_TURNOVER', 
+    'ADD_TURNOVER', 
+    'EDIT_TURNOVER', 
+    'DELETE_TURNOVER', 
+    'DELETE_PERIOD_TURNOVER',
+    'VIEW_CLEANING',
+    'ADD_CLEANING',
+    'EDIT_CLEANING',
+    'DELETE_CLEANING',
+    'DELETE_PERIOD_CLEANING'
+  ];
   const isChanged = JSON.stringify(roleConfigs) !== JSON.stringify(draftRoleConfigs);
 
   const showUserForm = isAddingUser || isEditingUser;

@@ -1,52 +1,61 @@
 
 export enum PerformanceLevel {
-  HIGH = 'HIGH', // < 25 min
-  MEDIUM = 'MEDIUM', // 25-40 min
-  LOW = 'LOW' // > 40 min
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW'
 }
 
-// Role agora é uma string que representa o ID único do nível de acesso
 export type Role = string;
 
 export type Permission = 
   | 'VIEW_DASHBOARD' 
-  | 'VIEW_RECORDS' 
-  | 'ADD_RECORDS' 
   | 'MANAGE_USERS'
-  | 'EDIT_RECORD'
-  | 'DELETE_RECORD'
-  | 'DELETE_PERIOD';
+  // Turnover Cirúrgico
+  | 'VIEW_TURNOVER' 
+  | 'ADD_TURNOVER' 
+  | 'EDIT_TURNOVER'
+  | 'DELETE_TURNOVER'
+  | 'DELETE_PERIOD_TURNOVER'
+  // Registro de Limpeza
+  | 'VIEW_CLEANING'
+  | 'ADD_CLEANING'
+  | 'EDIT_CLEANING'
+  | 'DELETE_CLEANING'
+  | 'DELETE_PERIOD_CLEANING';
 
 export interface RoleConfig {
   id: string;
-  roleName: string; // Nome visível do nível (ex: Administrador, Enfermeiro)
+  roleName: string;
   permissions: Permission[];
 }
 
 export interface SurgeryRecord {
   id: string;
   date: string;
-  patientName: string; // Nome do Paciente
-  medicalRecord: string; // Prontuário
+  patientName: string;
+  medicalRecord: string;
   roomNumber: string;
-  endAnesthesiaPrev: string; // HH:mm
-  startAnesthesiaNext: string; // HH:mm
+  endAnesthesiaPrev: string;
+  startAnesthesiaNext: string;
   intervalMinutes: number;
-  isDelay: boolean; // > 60 minutes
+  isDelay: boolean;
 }
 
-export interface DashboardStats {
-  averageTurnover: number;
-  totalPatients: number;
-  highPerformanceCount: number;
-  mediumPerformanceCount: number;
-  lowPerformanceCount: number;
-  delaysCount: number;
+export interface CleaningRecord {
+  id: string;
+  date: string;
+  roomNumber: string;
+  staffName: string;
+  nurseName: string;
+  cleaningType: 'CONCORRENTE' | 'TERMINAL';
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
 }
 
 export interface User {
   id: string;
   username: string;
   password?: string;
-  role: Role; // ID da RoleConfig correspondente
+  role: Role;
 }
