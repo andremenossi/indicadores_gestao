@@ -339,10 +339,10 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
             <input 
               ref={searchInputRef}
               type="text"
-              placeholder="Pesquisar por paciente, prontuário ou data..."
+              placeholder="PESQUISAR POR PACIENTE, PRONTUÁRIO OU DATA..."
               value={searchTerm}
               onInput={handleSearchInput}
-              className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-[#3583C7] focus:ring-4 focus:ring-[#3583C7]/10 transition-all text-sm font-bold shadow-inner uppercase placeholder:normal-case"
+              className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-[#3583C7] focus:ring-4 focus:ring-[#3583C7]/10 transition-all text-sm font-bold shadow-inner uppercase"
             />
             {searchTerm && (
               <button 
@@ -374,7 +374,6 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
                 <Download size={14} /> Exportar CSV
             </button>
 
-            {/* Fixed permission check for DELETE_PERIOD_TURNOVER */}
             {hasPermission('DELETE_PERIOD_TURNOVER') && (
               <button 
                 onClick={() => setShowMaintenance(!showMaintenance)}
@@ -481,7 +480,6 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
                       )}
                     </td>
                     <td className="px-4 py-6 text-right align-middle">
-                      {/* Fixed permission checks for EDIT_TURNOVER and DELETE_TURNOVER */}
                       {(hasPermission('EDIT_TURNOVER') || hasPermission('DELETE_TURNOVER')) && (
                         <div className="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
                           {hasPermission('EDIT_TURNOVER') && (

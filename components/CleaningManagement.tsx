@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
-import { Sparkles, ClipboardList, PlusCircle, LayoutDashboard } from 'lucide-react';
+import React from 'react';
 import { CleaningRecord } from '../types';
 import { CleaningRecordForm } from './cleaning/CleaningRecordForm';
 import { CleaningHistory } from './cleaning/CleaningHistory';
+import { CleaningDashboard } from './cleaning/CleaningDashboard';
 
 interface CleaningManagementProps {
   activeTab: 'dashboard' | 'history' | 'add';
@@ -27,11 +27,7 @@ export const CleaningManagement: React.FC<CleaningManagementProps> = ({
   return (
     <div className="animate-fade-in">
       {activeTab === 'dashboard' && (
-        <div className="py-20 text-center animate-fade-in">
-          <LayoutDashboard size={64} className="mx-auto text-slate-200 mb-4" />
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Dashboard de Limpeza</h2>
-          <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2">Métricas e indicadores em fase de consolidação.</p>
-        </div>
+        <CleaningDashboard records={records} />
       )}
 
       {activeTab === 'history' && (

@@ -15,10 +15,9 @@ export const CleaningRecordForm: React.FC<CleaningRecordFormProps> = ({ onAdd })
   const [nurseName, setNurseName] = useState('');
   const today = new Date().toISOString().split('T')[0];
 
-  const cleanString = (str: string) => str.trim().replace(/\s+/g, ' ').toUpperCase();
+  const cleanAndFormat = (str: string) => str.trim().replace(/\s+/g, ' ').toUpperCase();
 
   const handleNameInput = (e: React.FormEvent<HTMLInputElement>, setter: (val: string) => void) => {
-    // Permite apenas letras e espaços
     const val = e.currentTarget.value.toUpperCase().replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
     setter(val);
   };
@@ -34,14 +33,13 @@ export const CleaningRecordForm: React.FC<CleaningRecordFormProps> = ({ onAdd })
     const start = fd.get('start') as string;
     const end = fd.get('end') as string;
 
-    const finalStaff = cleanString(staffName);
-    const finalNurse = cleanString(nurseName);
+    const finalStaff = cleanAndFormat(staffName);
+    const finalNurse = cleanAndFormat(nurseName);
 
-    if (finalStaff.length < 3) newErrors.staff = "Nome do colaborador inválido.";
-    if (finalNurse.length < 3) newErrors.nurse = "Nome do enfermeiro inválido.";
+    if (finalStaff.length < 3) newErrors.staff = "Informe o nome completo do colaborador.";
+    if (finalNurse.length < 3) newErrors.nurse = "Informe o nome completo do enfermeiro.";
     if (date > today) newErrors.date = "Data futura não permitida.";
-    if (start === end) newErrors.time = "Horários não podem ser iguais.";
-
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -80,11 +78,11 @@ export const CleaningRecordForm: React.FC<CleaningRecordFormProps> = ({ onAdd })
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data</label>
-              <input name="date" type="date" required max={today} defaultValue={today} className={`w-full px-4 py-3 rounded-lg border ${errors.date ? 'border-red-500 bg-red-50' : 'border-slate-300 bg-slate-50'} focus:outline-none focus:border-[#3583C7] text-sm font-bold`} />
+              <input name="date" type="date" required max={today} defaultValue={today} className={`w-full px-4 py-3 rounded-lg border ${errors.date ? 'border-red-500 bg-red-50' : 'border-slate-300 bg-slate-50'} focus:outline-none focus:border-[#3583C7] text-sm font-bold shadow-inner`} />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sala</label>
-              <select name="room" className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-[#3583C7] bg-slate-50 text-sm font-black cursor-pointer">
+              <select name="room" className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-[#3583C7] bg-slate-50 text-sm font-black cursor-pointer shadow-inner">
                 {CLEANING_ROOMS.map(r => <option key={r} value={r}>Sala {r}</option>)}
               </select>
             </div>
@@ -92,7 +90,7 @@ export const CleaningRecordForm: React.FC<CleaningRecordFormProps> = ({ onAdd })
 
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tipo de Limpeza</label>
-            <select name="type" className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-[#3583C7] bg-slate-50 text-sm font-black cursor-pointer">
+            <select name="type" className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-[#3583C7] bg-slate-50 text-sm font-black cursor-pointer shadow-inner">
               <option value="CONCORRENTE">CONCORRENTE</option>
               <option value="TERMINAL">TERMINAL</option>
             </select>
@@ -107,7 +105,7 @@ export const CleaningRecordForm: React.FC<CleaningRecordFormProps> = ({ onAdd })
               required 
               value={staffName}
               onInput={(e) => handleNameInput(e, setStaffName)}
-              className={`w-full px-4 py-3 rounded-lg border uppercase ${errors.staff ? 'border-red-500 bg-red-50' : 'border-slate-300 bg-slate-50'} focus:outline-none focus:border-[#3583C7] text-sm font-black`} 
+              className={`w-full px-4 py-3 rounded-lg border uppercase ${errors.staff ? 'border-red-500 bg-red-50' : 'border-slate-300 bg-slate-50'} focus:outline-none focus:border-[#3583C7] text-sm font-black shadow-inner`} 
             />
           </div>
 
@@ -120,20 +118,26 @@ export const CleaningRecordForm: React.FC<CleaningRecordFormProps> = ({ onAdd })
               required 
               value={nurseName}
               onInput={(e) => handleNameInput(e, setNurseName)}
-              className={`w-full px-4 py-3 rounded-lg border uppercase ${errors.nurse ? 'border-red-500 bg-red-50' : 'border-slate-300 bg-slate-50'} focus:outline-none focus:border-[#3583C7] text-sm font-black`} 
+              className={`w-full px-4 py-3 rounded-lg border uppercase ${errors.nurse ? 'border-red-500 bg-red-50' : 'border-slate-300 bg-slate-50'} focus:outline-none focus:border-[#3583C7] text-sm font-black shadow-inner`} 
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Início</label>
-              <input name="start" type="time" required className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-slate-50 focus:outline-none focus:border-[#3583C7] text-sm font-mono font-bold" />
+              <input name="start" type="time" required className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-slate-50 focus:outline-none focus:border-[#3583C7] text-sm font-mono font-bold shadow-inner" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Término</label>
-              <input name="end" type="time" required className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-slate-50 focus:outline-none focus:border-[#3583C7] text-sm font-mono font-bold" />
+              <input name="end" type="time" required className="w-full px-4 py-3 rounded-lg border border-slate-300 bg-slate-50 focus:outline-none focus:border-[#3583C7] text-sm font-mono font-bold shadow-inner" />
             </div>
           </div>
+
+          {Object.keys(errors).length > 0 && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded text-[10px] font-black text-[#EE3234] uppercase tracking-widest animate-pulse">
+              Corrija os campos destacados acima.
+            </div>
+          )}
 
           <div className="pt-4">
             <button type="submit" className="w-full bg-[#3583C7] text-white font-black py-4 rounded-lg hover:bg-[#2d70ab] transition-all text-[11px] uppercase tracking-[0.15em] shadow-lg active:scale-[0.98]">

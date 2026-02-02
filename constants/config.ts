@@ -10,7 +10,8 @@ export const STORAGE_KEYS = {
 export const INITIAL_USERS: User[] = [
   { id: '1', username: 'admin', password: '@_admin123', role: 'ADMIN' },
   { id: '2', username: 'estatistica', password: 'estatistica123', role: 'ESTATISTICA' },
-  { id: '3', username: 'cirurgico', password: 'cirurgico123', role: 'CIRURGICO' }
+  { id: '3', username: 'cirurgico', password: 'cirurgico123', role: 'CIRURGICO' },
+  { id: '4', username: 'limpeza', password: 'limpeza123', role: 'LIMPEZA' }
 ];
 
 export const DEFAULT_ROLE_CONFIGS: RoleConfig[] = [
@@ -48,14 +49,20 @@ export const DEFAULT_ROLE_CONFIGS: RoleConfig[] = [
     roleName: 'CIRURGICO', 
     permissions: [
       'VIEW_TURNOVER', 
-      'ADD_TURNOVER', 
+      'ADD_TURNOVER'
+    ] 
+  },
+  { 
+    id: 'LIMPEZA', 
+    roleName: 'LIMPEZA', 
+    permissions: [
       'VIEW_CLEANING', 
       'ADD_CLEANING'
     ] 
   }
 ];
 
-export const ALLOWED_ROOMS = ['01', '02', '03', '04', '05'];
+export const ALLOWED_ROOMS = ['01', '02', '03'];
 
 export const COLORS = {
   BLUE: '#3583C7',
@@ -93,7 +100,7 @@ export const MOCK_RECORDS: SurgeryRecord[] = Array.from({ length: 15 }, (_, i) =
     date: `2024-03-${(i % 28 + 1).toString().padStart(2, '0')}`,
     patientName: names[i % 5],
     medicalRecord: (1000 + i).toString(),
-    roomNumber: ALLOWED_ROOMS[i % 5],
+    roomNumber: ALLOWED_ROOMS[i % ALLOWED_ROOMS.length],
     endAnesthesiaPrev: fTime(startH, 0),
     startAnesthesiaNext: fTime(startH, interval),
     intervalMinutes: interval,
