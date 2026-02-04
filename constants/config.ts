@@ -22,15 +22,19 @@ export const DEFAULT_ROLE_CONFIGS: RoleConfig[] = [
       'VIEW_DASHBOARD', 
       'MANAGE_USERS',
       'VIEW_TURNOVER', 
+      'VIEW_TURNOVER_DASHBOARD',
       'ADD_TURNOVER', 
       'EDIT_TURNOVER', 
       'DELETE_TURNOVER', 
       'DELETE_PERIOD_TURNOVER',
+      'IMPORT_TURNOVER',
       'VIEW_CLEANING',
+      'VIEW_CLEANING_DASHBOARD',
       'ADD_CLEANING',
       'EDIT_CLEANING',
       'DELETE_CLEANING',
-      'DELETE_PERIOD_CLEANING'
+      'DELETE_PERIOD_CLEANING',
+      'IMPORT_CLEANING'
     ] 
   },
   { 
@@ -39,8 +43,10 @@ export const DEFAULT_ROLE_CONFIGS: RoleConfig[] = [
     permissions: [
       'VIEW_DASHBOARD', 
       'VIEW_TURNOVER', 
+      'VIEW_TURNOVER_DASHBOARD',
       'EDIT_TURNOVER', 
       'VIEW_CLEANING', 
+      'VIEW_CLEANING_DASHBOARD',
       'EDIT_CLEANING'
     ] 
   },
@@ -74,16 +80,20 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   MANAGE_USERS: 'Gerenciar Usuários',
   // Turnover
   VIEW_TURNOVER: 'Ver Histórico Turnover',
+  VIEW_TURNOVER_DASHBOARD: 'Ver Dashboard Turnover',
   ADD_TURNOVER: 'Lançar Dados Turnover',
   EDIT_TURNOVER: 'Editar Lançamento Turnover',
   DELETE_TURNOVER: 'Excluir Item Turnover',
   DELETE_PERIOD_TURNOVER: 'Limpar Período Turnover',
+  IMPORT_TURNOVER: 'Importar Planilha Turnover',
   // Limpeza
   VIEW_CLEANING: 'Ver Histórico Limpeza',
+  VIEW_CLEANING_DASHBOARD: 'Ver Dashboard Limpeza',
   ADD_CLEANING: 'Lançar Dados Limpeza',
   EDIT_CLEANING: 'Editar Lançamento Limpeza',
   DELETE_CLEANING: 'Excluir Item Limpeza',
-  DELETE_PERIOD_CLEANING: 'Limpar Período Limpeza'
+  DELETE_PERIOD_CLEANING: 'Limpar Período Limpeza',
+  IMPORT_CLEANING: 'Importar Planilha Limpeza'
 };
 
 export const MOCK_RECORDS: SurgeryRecord[] = Array.from({ length: 15 }, (_, i) => {

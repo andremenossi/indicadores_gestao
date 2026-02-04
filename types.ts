@@ -12,16 +12,20 @@ export type Permission =
   | 'MANAGE_USERS'
   // Turnover Cirúrgico
   | 'VIEW_TURNOVER' 
+  | 'VIEW_TURNOVER_DASHBOARD'
   | 'ADD_TURNOVER' 
   | 'EDIT_TURNOVER'
   | 'DELETE_TURNOVER'
   | 'DELETE_PERIOD_TURNOVER'
+  | 'IMPORT_TURNOVER'
   // Registro de Limpeza
   | 'VIEW_CLEANING'
+  | 'VIEW_CLEANING_DASHBOARD'
   | 'ADD_CLEANING'
   | 'EDIT_CLEANING'
   | 'DELETE_CLEANING'
-  | 'DELETE_PERIOD_CLEANING';
+  | 'DELETE_PERIOD_CLEANING'
+  | 'IMPORT_CLEANING';
 
 export interface RoleConfig {
   id: string;

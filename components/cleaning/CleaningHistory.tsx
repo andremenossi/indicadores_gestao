@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useDeferredValue } from 'react';
+import React, { useState, useMemo, useDeferredValue, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Search, 
@@ -13,10 +13,10 @@ import {
   ArrowUp, 
   ArrowDown, 
   ArrowUpDown, 
-  AlertTriangle 
+  AlertTriangle
 } from 'lucide-react';
 import { CleaningRecord } from '../../types';
-import { displayDate } from '../../utils/time';
+import { displayDate, calculateIntervalMinutes } from '../../utils/time';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface CleaningHistoryProps {
@@ -198,16 +198,18 @@ export const CleaningHistory: React.FC<CleaningHistoryProps> = ({ records, onUpd
 
       <div className="flex flex-col gap-4 bg-white p-6 rounded-lg border border-slate-300 shadow-sm transition-all hover:shadow-md">
         <div className="flex flex-row gap-4 items-center justify-between">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#3583C7]" size={18} />
-            <input 
-              type="text"
-              placeholder="Pesquisar por colaborador, enfermeiro ou sala..."
-              value={searchTerm}
-              onInput={(e) => setSearchTerm(e.currentTarget.value.toUpperCase())}
-              className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-[#3583C7] focus:ring-4 focus:ring-[#3583C7]/10 transition-all text-sm font-bold shadow-inner uppercase"
-            />
-            {searchTerm && <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-[#EE3234] rounded-full hover:bg-slate-200"><X size={16} strokeWidth={3} /></button>}
+          <div className="relative flex-1 group flex items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#3583C7]" size={18} />
+              <input 
+                type="text"
+                placeholder="Pesquisar por colaborador, enfermeiro ou sala..."
+                value={searchTerm}
+                onInput={(e) => setSearchTerm(e.currentTarget.value.toUpperCase())}
+                className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-[#3583C7] text-sm font-bold shadow-inner uppercase"
+              />
+              {searchTerm && <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-[#EE3234] rounded-full hover:bg-slate-200"><X size={16} strokeWidth={3} /></button>}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -222,9 +224,10 @@ export const CleaningHistory: React.FC<CleaningHistoryProps> = ({ records, onUpd
               </select>
             </div>
 
-            <button onClick={onExport} className="flex items-center gap-2 px-4 py-2 bg-[#3583C7] text-white rounded-md font-black shadow-md hover:bg-[#2d70ab] text-[10px] uppercase tracking-widest transition-all">
-              <Download size={14} /> Exportar CSV
+            <button onClick={onExport} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#3583C7] text-white rounded-md font-black shadow-md hover:bg-[#2d70ab] transition-all text-[10px] uppercase tracking-widest">
+                <Download size={14} /> Exportar
             </button>
+            
             {hasPermission('DELETE_PERIOD_CLEANING') && (
               <button onClick={() => setShowMaintenance(!showMaintenance)} className={`flex items-center gap-2 px-4 py-2 rounded-md text-[10px] font-black uppercase transition-all active:scale-95 ${showMaintenance ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                 <Trash size={14} /> Manutenção
@@ -237,7 +240,7 @@ export const CleaningHistory: React.FC<CleaningHistoryProps> = ({ records, onUpd
           <div className="drawer-content">
             <div className="mt-4 p-6 bg-rose-50 border border-rose-200 rounded-lg shadow-inner">
               <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle size={16} className="text-[#EE3234]" />
+                <AlertCircle size={16} className="text-[#EE3234]" />
                 <h4 className="text-[10px] font-black text-[#EE3234] uppercase tracking-widest">Exclusão em Lote</h4>
               </div>
               <div className="flex flex-wrap items-end gap-4">
@@ -256,7 +259,7 @@ export const CleaningHistory: React.FC<CleaningHistoryProps> = ({ records, onUpd
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-300 overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-300 overflow-hidden shadow-sm">
         <div className="max-h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar relative">
           <table className="w-full text-left border-collapse table-fixed">
             <thead className="sticky top-0 z-10 bg-[#0f172a] text-white">

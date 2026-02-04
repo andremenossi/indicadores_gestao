@@ -16,7 +16,7 @@ import {
   Download
 } from 'lucide-react';
 import { SurgeryRecord } from '../types';
-import { displayDate } from '../utils/time';
+import { displayDate, calculateIntervalMinutes } from '../utils/time';
 import { useAuth } from '../contexts/AuthContext';
 import { ALLOWED_ROOMS } from '../constants/config';
 
@@ -334,25 +334,26 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
 
       <div className="flex flex-col gap-4 bg-white p-6 rounded-lg border border-slate-300 shadow-sm transition-all hover:shadow-md">
         <div className="flex flex-row gap-4 items-center justify-between">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#3583C7]" size={18} />
-            <input 
-              ref={searchInputRef}
-              type="text"
-              placeholder="PESQUISAR POR PACIENTE, PRONTUÁRIO OU DATA..."
-              value={searchTerm}
-              onInput={handleSearchInput}
-              className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-[#3583C7] focus:ring-4 focus:ring-[#3583C7]/10 transition-all text-sm font-bold shadow-inner uppercase"
-            />
-            {searchTerm && (
-              <button 
-                onClick={clearSearch}
-                aria-label="Limpar pesquisa"
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-[#EE3234] transition-colors rounded-full hover:bg-slate-200"
-              >
-                <X size={16} strokeWidth={3} />
-              </button>
-            )}
+          <div className="relative flex-1 group flex items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[#3583C7]" size={18} />
+              <input 
+                ref={searchInputRef}
+                type="text"
+                placeholder="PESQUISAR POR PACIENTE, PRONTUÁRIO OU DATA..."
+                value={searchTerm}
+                onInput={handleSearchInput}
+                className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-300 rounded-lg outline-none focus:border-[#3583C7] focus:ring-4 focus:ring-[#3583C7]/10 transition-all text-sm font-bold shadow-inner uppercase"
+              />
+              {searchTerm && (
+                <button 
+                  onClick={clearSearch}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-[#EE3234] transition-colors rounded-full hover:bg-slate-200"
+                >
+                  <X size={16} strokeWidth={3} />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -369,9 +370,9 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
             
             <button 
                 onClick={onExport}
-                className="flex items-center gap-2 px-4 py-2 bg-[#3583C7] text-white rounded-md font-black shadow-md hover:bg-[#2d70ab] transition-all text-[10px] uppercase tracking-widest"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#3583C7] text-white rounded-md font-black shadow-md hover:bg-[#2d70ab] transition-all text-[10px] uppercase tracking-widest"
               >
-                <Download size={14} /> Exportar CSV
+                <Download size={14} /> Exportar
             </button>
 
             {hasPermission('DELETE_PERIOD_TURNOVER') && (

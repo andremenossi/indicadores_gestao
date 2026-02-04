@@ -16,7 +16,8 @@ import {
   AlertTriangle,
   Stethoscope,
   Sparkles,
-  Settings
+  Settings,
+  Upload
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { User, SurgeryRecord, CleaningRecord, Permission, RoleConfig } from './types';
@@ -25,6 +26,7 @@ import { RecordManagement } from './components/RecordManagement';
 import { HistoryManagement } from './components/HistoryManagement';
 import { Dashboard } from './components/Dashboard';
 import { CleaningManagement } from './components/CleaningManagement';
+import { ImportManagement } from './components/ImportManagement';
 import { 
   INITIAL_USERS, 
   DEFAULT_ROLE_CONFIGS, 
@@ -35,13 +37,13 @@ import { calculateIntervalMinutes, displayDate } from './utils/time';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 type ModuleId = 'general' | 'turnover' | 'cleaning' | 'users';
-type TabId = 'dashboard' | 'history' | 'add';
+type TabId = 'dashboard' | 'history' | 'add' | 'import';
 
 const AppIcon = ({ className = "" }) => (
   <div className={`flex items-center justify-center overflow-hidden ${className}`}>
     <img 
       src="logo.png" 
-      alt="GSC" 
+      alt="GSC Logo" 
       className="max-w-full max-h-full object-contain block"
       onError={(e) => { e.currentTarget.style.display = 'none'; }}
     />
@@ -112,7 +114,6 @@ const LoginForm: React.FC<{ users: User[], onLogin: (user: User) => void }> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Busca insensível a maiúsculas/minúsculas para o login
     const matched = users.find(u => 
       u.username.toUpperCase() === username.toUpperCase() && 
       u.password === password
@@ -183,6 +184,61 @@ const AppContent: React.FC<{
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
+  const modules = useMemo(() => [
+    { id: 'general', label: 'Painel Geral', icon: LayoutDashboard, perm: 'VIEW_DASHBOARD' },
+    { id: 'turnover', label: 'Turnover Cirúrgico', icon: Stethoscope, perm: 'VIEW_TURNOVER' },
+    { id: 'cleaning', label: 'Registro de Limpeza', icon: Sparkles, perm: 'VIEW_CLEANING' },
+    { id: 'users', label: 'Usuários', icon: UsersIcon, perm: 'MANAGE_USERS' },
+  ].filter(m => hasPermission(m.perm as Permission)), [hasPermission]);
+
+  // ORDEM DAS ABAS: Dashboard, Lançamento, Histórico, Importar
+  const tabs = useMemo(() => [
+    { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: LayoutDashboard, 
+      perm: props.activeModule === 'turnover' ? 'VIEW_TURNOVER_DASHBOARD' : 'VIEW_CLEANING_DASHBOARD' 
+    },
+    { 
+      id: 'add', 
+      label: 'Lançamento', 
+      icon: PlusCircle, 
+      perm: props.activeModule === 'turnover' ? 'ADD_TURNOVER' : 'ADD_CLEANING' 
+    },
+    { 
+      id: 'history', 
+      label: 'Histórico', 
+      icon: ClipboardList, 
+      perm: props.activeModule === 'turnover' ? 'VIEW_TURNOVER' : 'VIEW_CLEANING' 
+    },
+    { 
+      id: 'import', 
+      label: 'Importar', 
+      icon: Upload, 
+      perm: props.activeModule === 'turnover' ? 'IMPORT_TURNOVER' : 'IMPORT_CLEANING' 
+    },
+  ], [props.activeModule]);
+
+  const visibleTabs = useMemo(() => tabs.filter(t => hasPermission(t.perm as Permission)), [tabs, hasPermission]);
+
+  // EFEITO DE SEGURANÇA: Redireciona se o módulo ou aba atual não for permitido
+  useEffect(() => {
+    // 1. Validar Módulo
+    const isModulePermitted = modules.some(m => m.id === props.activeModule);
+    if (!isModulePermitted && modules.length > 0) {
+      props.setActiveModule(modules[0].id as ModuleId);
+      return;
+    }
+
+    // 2. Validar Aba (apenas para módulos com abas)
+    if (props.activeModule === 'turnover' || props.activeModule === 'cleaning') {
+      const isTabPermitted = visibleTabs.some(t => t.id === props.activeTab);
+      if (!isTabPermitted && visibleTabs.length > 0) {
+        props.setActiveTab(visibleTabs[0].id as TabId);
+      }
+    }
+  }, [props.activeModule, props.activeTab, modules, visibleTabs]);
+
   const handleAddRecord = (newRecord: Omit<SurgeryRecord, 'id' | 'intervalMinutes' | 'isDelay'>) => {
     const diff = calculateIntervalMinutes(newRecord.endAnesthesiaPrev, newRecord.startAnesthesiaNext);
     const record: SurgeryRecord = {
@@ -192,6 +248,11 @@ const AppContent: React.FC<{
       isDelay: diff > 60
     };
     props.setRecords([record, ...props.records]);
+    props.setActiveTab('history');
+  };
+
+  const handleBatchAddRecords = (newRecords: SurgeryRecord[]) => {
+    props.setRecords([...newRecords, ...props.records]);
     props.setActiveTab('history');
   };
 
@@ -217,6 +278,11 @@ const AppContent: React.FC<{
       durationMinutes: duration
     };
     props.setCleaningRecords([rec, ...props.cleaningRecords]);
+    props.setActiveTab('history');
+  };
+
+  const handleBatchAddCleaning = (newRecords: CleaningRecord[]) => {
+    props.setCleaningRecords([...newRecords, ...props.cleaningRecords]);
     props.setActiveTab('history');
   };
 
@@ -263,28 +329,14 @@ const AppContent: React.FC<{
     link.click();
   };
 
-  const modules = [
-    { id: 'general', label: 'Painel Geral', icon: LayoutDashboard, perm: 'VIEW_DASHBOARD' },
-    { id: 'turnover', label: 'Turnover Cirúrgico', icon: Stethoscope, perm: 'VIEW_TURNOVER' },
-    { id: 'cleaning', label: 'Registro de Limpeza', icon: Sparkles, perm: 'VIEW_CLEANING' },
-    { id: 'users', label: 'Usuários', icon: UsersIcon, perm: 'MANAGE_USERS' },
-  ].filter(m => hasPermission(m.perm as Permission));
-
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'history', label: 'Histórico', icon: ClipboardList },
-    { id: 'add', label: 'Lançamento', icon: PlusCircle },
-  ];
-
   const SidebarContent = () => (
     <>
       <div className="p-6 mb-4 border-b border-slate-800/50 flex flex-col items-center">
         <div className="flex items-center gap-3 w-full justify-between lg:justify-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-[#0f172a] font-black text-xl">H</div>
+            <AppIcon className="w-10 h-10 bg-white rounded-lg p-1" />
             <div className="text-left">
-              <span className="font-black text-white text-lg tracking-widest uppercase block leading-tight">HEPP GESTÃO</span>
-              <span className="text-[7px] text-slate-400 font-bold uppercase tracking-widest block">Inteligência Hospitalar</span>
+              <span className="font-black text-white text-[9px] tracking-widest uppercase block leading-tight">Gestão de Sala Cirúrgica</span>
             </div>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
@@ -297,7 +349,10 @@ const AppContent: React.FC<{
         {modules.map((m) => (
           <button 
             key={m.id}
-            onClick={() => { props.setActiveModule(m.id as ModuleId); setIsSidebarOpen(false); if(m.id === 'turnover' || m.id === 'cleaning') props.setActiveTab('dashboard'); }}
+            onClick={() => { 
+              props.setActiveModule(m.id as ModuleId); 
+              setIsSidebarOpen(false); 
+            }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-[10px] font-black uppercase tracking-widest ${
               props.activeModule === m.id 
               ? 'bg-[#3583C7] text-white shadow-lg' 
@@ -348,7 +403,7 @@ const AppContent: React.FC<{
         {(props.activeModule === 'turnover' || props.activeModule === 'cleaning') && (
           <header className="bg-slate-50 border-b border-slate-300 pt-3 px-6 flex items-end gap-1 shrink-0 z-20 h-14">
             <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-200 rounded-md mb-1 mr-2"><Menu size={20} /></button>
-            {tabs.map((tab) => (
+            {visibleTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => props.setActiveTab(tab.id as TabId)}
@@ -375,8 +430,9 @@ const AppContent: React.FC<{
           <div className="max-w-7xl mx-auto">
             {props.activeModule === 'turnover' && (
               <div className="animate-fade-in">
-                {props.activeTab === 'dashboard' && <Dashboard records={props.records} />}
-                {props.activeTab === 'history' && (
+                {props.activeTab === 'dashboard' && hasPermission('VIEW_TURNOVER_DASHBOARD') && <Dashboard records={props.records} />}
+                {props.activeTab === 'add' && hasPermission('ADD_TURNOVER') && <RecordManagement onAdd={handleAddRecord} allowedRooms={ALLOWED_ROOMS} />}
+                {props.activeTab === 'history' && hasPermission('VIEW_TURNOVER') && (
                   <HistoryManagement 
                     records={props.records} 
                     onUpdate={handleUpdateRecord}
@@ -385,7 +441,12 @@ const AppContent: React.FC<{
                     onExport={exportToExcel}
                   />
                 )}
-                {props.activeTab === 'add' && <RecordManagement onAdd={handleAddRecord} allowedRooms={ALLOWED_ROOMS} />}
+                {props.activeTab === 'import' && hasPermission('IMPORT_TURNOVER') && (
+                  <ImportManagement 
+                    type="turnover"
+                    onBatchAdd={handleBatchAddRecords}
+                  />
+                )}
               </div>
             )}
             
@@ -399,11 +460,12 @@ const AppContent: React.FC<{
                   onDelete={handleDeleteCleaningRecord}
                   onDeletePeriod={handleDeleteCleaningByPeriod}
                   onExport={exportCleaningToExcel}
+                  onBatchAdd={handleBatchAddCleaning}
                 />
               </div>
             )}
 
-            {props.activeModule === 'general' && (
+            {props.activeModule === 'general' && hasPermission('VIEW_DASHBOARD') && (
               <div className="py-20 text-center animate-fade-in">
                 <LayoutDashboard size={64} className="mx-auto text-slate-200 mb-4" />
                 <h2 className="text-xl font-black text-slate-900 uppercase">Painel Geral Consolidado</h2>
@@ -444,7 +506,6 @@ const App: React.FC = () => {
   const [roleConfigs, setRoleConfigs] = useState<RoleConfig[]>(DEFAULT_ROLE_CONFIGS);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Define a base da API dinamicamente para facilitar o uso em rede
   const API_BASE = window.location.origin.includes('localhost') ? "" : window.location.origin;
 
   useEffect(() => {
@@ -453,15 +514,12 @@ const App: React.FC = () => {
         const dataRes = await fetch(`${API_BASE}/api/data`);
         const data = await dataRes.json();
         
-        // Só atualizamos o estado se o servidor retornar usuários válidos
-        // Isso previne que um erro no servidor limpe a lista de acesso Admin do front
         if (data && data.users && data.users.length > 0) {
           setRecords(data.records || []);
           setCleaningRecords(data.cleaningRecords || []);
           setUsers(data.users);
           setRoleConfigs(data.roleConfigs);
         } else {
-          // Fallback seguro se o banco de dados do servidor estiver ilegível
           setRecords(MOCK_RECORDS);
           setCleaningRecords([]);
           setUsers(INITIAL_USERS);
@@ -469,7 +527,6 @@ const App: React.FC = () => {
         }
       } catch (e) { 
         console.error('Falha ao conectar com o servidor de dados:', e); 
-        // Em caso de erro de rede, mantém os usuários padrão para permitir login local se possível
         setUsers(INITIAL_USERS);
       } finally { 
         setIsLoading(false); 
