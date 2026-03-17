@@ -440,9 +440,6 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
                 <th onClick={() => toggleSort('intervalMinutes')} className="text-center cursor-pointer hover:bg-slate-700 transition-colors w-[90px]">
                   <div className="flex items-center justify-between">Tempo {getSortIcon('intervalMinutes')}</div>
                 </th>
-                <th onClick={() => toggleSort('isDelay')} className="text-center cursor-pointer hover:bg-slate-700 transition-colors w-[110px]">
-                  <div className="flex items-center justify-between">Status {getSortIcon('isDelay')}</div>
-                </th>
                 <th className="text-right p-4 w-[100px]">Ações</th>
               </tr>
             </thead>
@@ -463,22 +460,7 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
                     <td className="px-4 py-6 text-center font-mono text-[11px] font-bold text-slate-500 align-middle">{r.endAnesthesiaPrev}</td>
                     <td className="px-4 py-6 text-center font-mono text-[11px] font-bold text-slate-500 align-middle">{r.startAnesthesiaNext}</td>
                     <td className="px-4 py-6 text-center align-middle">
-                      <span className={`text-[11px] font-black ${r.isDelay ? 'text-[#EE3234]' : 'text-slate-900'}`}>{r.intervalMinutes}m</span>
-                    </td>
-                    <td className="px-4 py-6 text-center align-middle">
-                      {r.isDelay ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-[#EE3234] rounded text-[9px] font-black uppercase tracking-widest border border-[#EE3234]/40">
-                          Atraso
-                        </span>
-                      ) : (
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${
-                          r.intervalMinutes < 25 ? 'bg-emerald-50 text-emerald-600 border-emerald-400' : 
-                          r.intervalMinutes <= 40 ? 'bg-amber-50 text-amber-600 border-amber-400' : 
-                          'bg-rose-50 text-rose-600 border-rose-400'
-                        }`}>
-                          {r.intervalMinutes < 25 ? 'Alta' : r.intervalMinutes <= 40 ? 'Média' : 'Baixa'}
-                        </span>
-                      )}
+                      <span className="text-[11px] font-black text-slate-900">{r.intervalMinutes}m</span>
                     </td>
                     <td className="px-4 py-6 text-right align-middle">
                       {(hasPermission('EDIT_TURNOVER') || hasPermission('DELETE_TURNOVER')) && (
@@ -508,7 +490,7 @@ export const HistoryManagement: React.FC<HistoryManagementProps> = ({ records, o
                 ))
               ) : (
                 <tr>
-                  <td colSpan={9} className="text-center py-20 bg-slate-50">
+                  <td colSpan={8} className="text-center py-20 bg-slate-50">
                     <div className="flex flex-col items-center gap-2 opacity-30">
                       <ClipboardList size={40} />
                       <span className="text-xs font-black uppercase tracking-widest">Nenhum registro encontrado</span>

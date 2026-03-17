@@ -430,7 +430,9 @@ const AppContent: React.FC<{
           <div className="max-w-7xl mx-auto">
             {props.activeModule === 'turnover' && (
               <div className="animate-fade-in">
-                {props.activeTab === 'dashboard' && hasPermission('VIEW_TURNOVER_DASHBOARD') && <Dashboard records={props.records} />}
+                {props.activeTab === 'dashboard' && hasPermission('VIEW_TURNOVER_DASHBOARD') && (
+                  <Dashboard records={props.records} cleaningRecords={props.cleaningRecords} />
+                )}
                 {props.activeTab === 'add' && hasPermission('ADD_TURNOVER') && <RecordManagement onAdd={handleAddRecord} allowedRooms={ALLOWED_ROOMS} />}
                 {props.activeTab === 'history' && hasPermission('VIEW_TURNOVER') && (
                   <HistoryManagement 
